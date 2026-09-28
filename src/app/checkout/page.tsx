@@ -4,11 +4,37 @@ import { useCartStore } from "@/store/cartStore";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
+import { useAuth } from "@clerk/nextjs";
+import { useState } from "react";
+
 export default function CheckoutPage() {
   const { items } = useCartStore();
+  const { isSignedIn, isLoaded } = useAuth();
+  const [guestMode, setGuestMode] = useState(false);
+
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shipping = 20000;
   const total = subtotal + shipping;
+
+  if (!isLoaded) {
+    return <div className="min-h-screen bg-kalana-offwhite flex items-center justify-center font-mono text-sm tracking-widest uppercase">Loading checkout...</div>;
+  }
+
+  if (!isSignedIn && !guestMode) {
+    return (
+      <div className="min-h-screen bg-kalana-offwhite flex flex-col items-center justify-center p-4">
+        <div className="mb-12 text-center">
+          <h1 className="text-2xl font-bold tracking-widest uppercase font-mono">Sign in to continue</h1>
+          <p className="text-sm text-kalana-black/60 mt-2 font-mono">Save your details for faster checkout</p>
+        </div>
+        <div className="space-y-4 w-full max-w-xs flex flex-col">
+          <Link href="/login" className="px-6 py-4 bg-kalana-black text-kalana-offwhite text-center font-mono text-xs tracking-widest hover:bg-black/80 transition-colors">SIGN IN</Link>
+          <Link href="/signup" className="px-6 py-4 border border-kalana-black text-kalana-black text-center font-mono text-xs tracking-widest hover:bg-kalana-black/5 transition-colors">CREATE ACCOUNT</Link>
+          <button onClick={() => setGuestMode(true)} className="mt-8 px-6 py-4 text-kalana-black/60 text-center font-mono text-xs tracking-widest hover:text-kalana-black transition-colors underline underline-offset-4">CONTINUE AS GUEST</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-kalana-offwhite text-kalana-black flex flex-col md:flex-row pt-20">

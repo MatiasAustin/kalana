@@ -7,6 +7,7 @@ import { Search, Menu, X } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 
 export default function HeaderClient({ navLinks, brandName, location, socialLinks }: any) {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -54,10 +55,20 @@ export default function HeaderClient({ navLinks, brandName, location, socialLink
           </nav>
 
           {/* Right Actions */}
-          <div className="flex items-center space-x-8 z-50">
+          <div className="flex items-center space-x-6 md:space-x-8 z-50">
             <button className="hidden md:block text-kalana-black hover:opacity-60 transition-opacity">
               <Search className="w-4 h-4" strokeWidth={1.5} />
             </button>
+            <SignedIn>
+              <Link href="/account" className="hidden md:block text-[10px] tracking-[0.2em] uppercase text-kalana-black hover:opacity-60 transition-opacity">
+                Account
+              </Link>
+            </SignedIn>
+            <SignedOut>
+              <Link href="/login" className="hidden md:block text-[10px] tracking-[0.2em] uppercase text-kalana-black hover:opacity-60 transition-opacity">
+                Account
+              </Link>
+            </SignedOut>
             <button 
               onClick={openCart} 
               className="relative flex items-center gap-2 text-kalana-black hover:opacity-60 transition-opacity group"

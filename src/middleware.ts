@@ -1,3 +1,5 @@
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+
 const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 const isAdminApiRoute = createRouteMatcher(['/api/admin(.*)']);
 // Exclude the admin login route from protection
