@@ -1,0 +1,123 @@
+{
+  "siteSettings": {
+    "brandName": "KALANA",
+    "tagline": "SPACE. COFFEE. FURTHER DAYS.",
+    "email": "hello@kalana.com",
+    "phone": "+62 811 1234 567",
+    "whatsapp": "+62 811 1234 567",
+    "country": "Indonesia",
+    "currency": "IDR",
+    "timezone": "Asia/Jakarta"
+  },
+  "navigation": {
+    "header": [
+      { "label": "HOME", "url": "/" },
+      { "label": "SPACE", "url": "/space" },
+      { "label": "ROASTERY", "url": "/roastery" },
+      { "label": "GOODS", "url": "/goods" },
+      { "label": "ABOUT", "url": "/about" }
+    ],
+    "footer": [
+      { "label": "SHOP ROASTERY", "url": "/roastery" },
+      { "label": "VISIT SPACE", "url": "/space" },
+      { "label": "WORKSHOPS", "url": "/space/workshops" },
+      { "label": "OUR STORY", "url": "/about" }
+    ],
+    "legal": [
+      { "label": "TERMS", "url": "/terms" },
+      { "label": "PRIVACY", "url": "/privacy" },
+      { "label": "SHIPPING", "url": "/shipping" }
+    ]
+  },
+  "socialLinks": [
+    { "platform": "Instagram", "url": "https://instagram.com/kalana", "active": true },
+    { "platform": "TikTok", "url": "https://tiktok.com/@kalana", "active": true },
+    { "platform": "WhatsApp", "url": "https://wa.me/628111234567", "active": true }
+  ],
+  "location": {
+    "name": "Kalana Space",
+    "address": "Cikampek",
+    "province": "West Java",
+    "openingHours": "08:00 - 22:00"
+  },
+  "homepage": {
+    "hero": {
+      "eyebrow": "KALANA Space & Roastery",
+      "established": "Est. 2026",
+      "headline": "Space.<br/>Coffee.<br/>Further<br/>Days.",
+      "primaryCtaLabel": "Explore KALANA",
+      "primaryCtaUrl": "/roastery",
+      "secondaryCtaLabel": "Visit Us",
+      "secondaryCtaUrl": "/space"
+    },
+    "featuredCollection": {
+      "eyebrow": "Featured",
+      "title": "Daily Series.",
+      "description": "Two everyday blends made for the way coffee is actually enjoyed.",
+      "collectionHandle": "daily-series",
+      "ctaLabel": "Shop Roastery →",
+      "ctaUrl": "/roastery"
+    },
+    "brandStory": {
+      "headline": "Made<br/>For the<br/>Daily<br/>Ritual.",
+      "description": "From the first cup of the morning to the last conversation of the day, KALANA is built around the little rituals that make the journey worth remembering.",
+      "ctaLabel": "Our Story →",
+      "ctaUrl": "/about"
+    },
+    "socialProof": {
+      "eyebrow": "Community",
+      "rating": "4.9/5 Rating",
+      "reviews": [
+        { "text": "Not just another coffee shop. The space feels intentional, and the Daily House blend is perfectly balanced.", "author": "Arif R." },
+        { "text": "My go-to place in Cikampek for deep work. The atmosphere is calm and the manual brew is always on point.", "author": "Nadia K." },
+        { "text": "Took home the Daily Crema beans. It makes my morning routine something I actually look forward to.", "author": "Bima S." }
+      ]
+    },
+    "space": {
+      "eyebrow": "Kalana Space",
+      "title": "Come<br/>Wander<br/>In.",
+      "description": "A place to slow down, meet people, work for a while, or simply have another cup.",
+      "ctaLabel": "Visit Space →",
+      "ctaUrl": "/space"
+    },
+    "workshops": {
+      "title": "Workshops.",
+      "ctaLabel": "See All →",
+      "ctaUrl": "/space/workshops",
+      "events": [
+        { "date": "Oct 12", "year": "2026", "title": "Manual Brew Basics", "category": "Education" },
+        { "date": "Oct 26", "year": "2026", "title": "Espresso Calibration", "category": "Education" },
+        { "date": "Nov 05", "year": "2026", "title": "Analog Photo Walk", "category": "Creative" }
+      ]
+    },
+    "newsletter": {
+      "eyebrow": "Newsletter",
+      "title": "Stay in the loop.",
+      "description": "New beans, workshops, events, and things we're working on.",
+      "placeholder": "EMAIL ADDRESS",
+      "ctaLabel": "Join →"
+    }
+  },
+  "products": [
+    {
+      "id": "1",
+      "name": "Daily House",
+      "handle": "daily-house",
+      "price": "IDR 95.000",
+      "blend": "70% Robusta / 30% Arabica",
+      "roast": "Medium-Dark",
+      "tastingNotes": "Dark Chocolate, Peanut, Brown Sugar",
+      "collection": "daily-series"
+    },
+    {
+      "id": "2",
+      "name": "Daily Crema",
+      "handle": "daily-crema",
+      "price": "IDR 110.000",
+      "blend": "50% Arabica / 50% Robusta",
+      "roast": "Medium",
+      "tastingNotes": "Milk Chocolate, Caramel, Roasted Nuts",
+      "collection": "daily-series"
+    }
+  ]
+}

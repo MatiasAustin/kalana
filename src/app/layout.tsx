@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
+import { ClerkProvider } from '@clerk/nextjs'
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -18,15 +19,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased bg-kalana-offwhite text-kalana-black min-h-screen flex flex-col`}>
-        <Header />
-        <main className="flex-grow">
-          {children}
-        </main>
-        <Footer />
-        <CartDrawer />
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body className={`${inter.variable} font-sans antialiased bg-kalana-offwhite text-kalana-black min-h-screen flex flex-col`}>
+          <Header />
+          <main className="flex-grow">
+            {children}
+          </main>
+          <Footer />
+          <CartDrawer />
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
