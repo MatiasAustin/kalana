@@ -54,7 +54,7 @@ export async function POST(req: Request) {
   const eventType = evt.type;
 
   if (eventType === 'user.created') {
-    const { id, email_addresses, first_name, last_name } = evt.data;
+    const { id, email_addresses, first_name, last_name, public_metadata } = evt.data;
     
     if (!id || !email_addresses) {
       return new Response('Error occurred -- missing data', {
@@ -65,12 +65,14 @@ export async function POST(req: Request) {
     const email = email_addresses[0]?.email_address;
     const userId = uuidv4();
     const customerId = uuidv4();
+    
+    const role = (public_metadata?.role as string) || 'CUSTOMER';
 
     // Create user in DB
     await db.insert(users).values({
       id: userId,
       clerkUserId: id,
-      role: 'CUSTOMER',
+      role: role,
     });
 
     // Create corresponding customer profile
@@ -85,8 +87,9 @@ export async function POST(req: Request) {
   }
 
   if (eventType === 'user.updated') {
-    const { id, email_addresses, first_name, last_name } = evt.data;
+    const { id, email_addresses, first_name, last_name, public_metadata } = evt.data;
     const email = email_addresses[0]?.email_address;
+    const role = public_metadata?.role as string;
 
     // Find the user by clerkUserId
     const userRecord = await db.query.users.findFirst({
@@ -94,6 +97,13 @@ export async function POST(req: Request) {
     });
 
     if (userRecord) {
+      // If role was updated in Clerk, sync it to Turso
+      if (role && role !== userRecord.role) {
+        await db.update(users)
+          .set({ role: role })
+          .where(eq(users.id, userRecord.id));
+      }
+
       // Update customer profile
       await db.update(customers)
         .set({
