@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { db } from '@/lib/db';
-import { siteSettings, products, locations, socialLinks } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { siteSettings, products, locations, socialLinks, homepageSections } from '@/lib/db/schema';
+import { eq, asc } from 'drizzle-orm';
 
 // Abstraction for CMS Data Fetching
 // This reads from the local JSON file, simulating a database or headless CMS API.
@@ -32,8 +32,62 @@ export async function getNavigation() {
 }
 
 export async function getHomepage() {
-  const data = await getCmsData();
-  return data.homepage;
+  const sections = await db.query.homepageSections.findMany({
+    orderBy: [asc(homepageSections.sortOrder)]
+  });
+
+  if (!sections || sections.length === 0) {
+    const data = await getCmsData();
+    return data.homepage;
+  }
+
+  // Transform dynamic DB sections into the legacy structure expected by page.tsx
+  const formatted: any = {
+    hero: {},
+    featuredCollection: {},
+    brandStory: {},
+    space: {}
+  };
+
+  sections.forEach(sec => {
+    const data = typeof sec.data === 'string' ? JSON.parse(sec.data) : sec.data;
+    if (sec.type === 'HERO') {
+      formatted.hero = {
+        eyebrow: data.eyebrow || "KALANA SPACE & ROASTERY",
+        established: "Est. 2026",
+        headline: data.headline?.replace(/\./g, '.<br/>') || "Space.<br/>Coffee.<br/>Further<br/>Days.",
+        primaryCtaLabel: data.ctaText || "Explore",
+        primaryCtaUrl: data.ctaUrl || "/roastery",
+        secondaryCtaLabel: "Visit Us",
+        secondaryCtaUrl: "/space"
+      };
+    } else if (sec.type === 'FEATURED_COLLECTION') {
+      formatted.featuredCollection = {
+        eyebrow: "Featured",
+        title: data.title || "Daily Series.",
+        description: data.subtext || "Our everyday blends.",
+        collectionHandle: "daily-series",
+        ctaLabel: "Shop Roastery",
+        ctaUrl: "/roastery"
+      };
+    } else if (sec.type === 'BRAND_STORY') {
+      formatted.brandStory = {
+        headline: "Made<br/>For the<br/>Daily<br/>Ritual.",
+        description: data.content || "KALANA is built around the little rituals."
+      };
+    } else if (sec.type === 'SPACE') {
+      formatted.space = {
+        eyebrow: "Location",
+        title: data.title || "The Space.",
+        description: "Where coffee and conversations happen.",
+        features: ["Espresso Bar", "Roastery", "Events"],
+        ctaLabel: "Learn More",
+        ctaUrl: "/space"
+      };
+    }
+  });
+
+  return formatted;
 }
 
 export async function getProducts() {
