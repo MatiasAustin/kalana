@@ -71,6 +71,7 @@ export async function createProduct(data: CreateProductInput) {
 
     revalidatePath("/admin/products");
     revalidatePath("/roastery");
+    revalidatePath("/");
     
     return { success: true, id: productId };
   } catch (error: any) {
@@ -91,6 +92,7 @@ export async function deleteProduct(productId: string) {
 
     revalidatePath("/admin/products");
     revalidatePath("/roastery");
+    revalidatePath("/");
     
     return { success: true };
   } catch (error: any) {
