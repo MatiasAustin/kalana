@@ -120,10 +120,10 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
         });
 
         if (!presignedRes.ok) throw new Error('Failed to get upload URL');
-        const { url, key, publicUrl } = await presignedRes.json();
+        const { uploadUrl, key, publicUrl } = await presignedRes.json();
 
         // Upload directly to R2
-        const uploadRes = await fetch(url, {
+        const uploadRes = await fetch(uploadUrl, {
           method: 'PUT',
           body: media.file,
           headers: { 'Content-Type': media.file.type }
