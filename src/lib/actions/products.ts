@@ -31,7 +31,6 @@ export async function createProduct(data: CreateProductInput) {
 
     const productId = uuidv4();
     
-    // Create product
     await db.insert(products).values({
       id: productId,
       name: data.name,
@@ -43,7 +42,6 @@ export async function createProduct(data: CreateProductInput) {
       status: data.status,
     });
 
-    // Create variants
     if (data.variants && data.variants.length > 0) {
       const variantsToInsert = data.variants.map((v) => ({
         id: uuidv4(),
@@ -57,7 +55,6 @@ export async function createProduct(data: CreateProductInput) {
       await db.insert(productVariants).values(variantsToInsert);
     }
 
-    // Link media
     if (data.mediaIds && data.mediaIds.length > 0) {
       const mediaToInsert = data.mediaIds.map((mediaId, idx) => ({
         id: uuidv4(),
@@ -72,6 +69,7 @@ export async function createProduct(data: CreateProductInput) {
     revalidatePath("/admin/products");
     revalidatePath("/roastery");
     revalidatePath("/");
+    revalidatePath("/product/" + data.slug);
     
     return { success: true, id: productId };
   } catch (error: any) {
@@ -84,8 +82,6 @@ export async function deleteProduct(productId: string) {
   try {
     await requireAdminApi();
 
-    // In a real production environment with order history, we should SOFT delete or check for existing orders.
-    // For now, we'll hard delete the relations then the product.
     await db.delete(productVariants).where(eq(productVariants.productId, productId));
     await db.delete(productMedia).where(eq(productMedia.productId, productId));
     await db.delete(products).where(eq(products.id, productId));
@@ -100,11 +96,11 @@ export async function deleteProduct(productId: string) {
     return { success: false, error: "Failed to delete product. It may be linked to existing orders." };
   }
 }
+
 export async function updateProduct(id: string, data: CreateProductInput) {
   try {
     await requireAdminApi();
 
-    // Update product
     await db.update(products)
       .set({
         name: data.name,
@@ -117,20 +113,12 @@ export async function updateProduct(id: string, data: CreateProductInput) {
       })
       .where(eq(products.id, id));
 
-    // For variants and media, the easiest way is to delete and recreate them.
-    // In a strict production system with foreign keys to orders, we should update existing variants by ID.
-    // However, since we might add/remove variants, let's carefully update or insert.
-    // Actually, for this sprint, deleting and recreating variants is dangerous if orders reference them.
-    // Let's implement proper variant merging.
-
     const existingVariants = await db.query.productVariants.findMany({
       where: eq(productVariants.productId, id)
     });
 
-    // Handle Variants
     for (const v of data.variants) {
       if (v.id && !v.id.startsWith('new-')) {
-        // Update
         await db.update(productVariants).set({
           name: v.name,
           sku: v.sku,
@@ -138,7 +126,6 @@ export async function updateProduct(id: string, data: CreateProductInput) {
           weight: v.weight,
         }).where(eq(productVariants.id, v.id));
       } else {
-        // Insert
         await db.insert(productVariants).values({
           id: uuidv4(),
           productId: id,
@@ -151,14 +138,13 @@ export async function updateProduct(id: string, data: CreateProductInput) {
       }
     }
 
-    // Identify variants to delete (those in existing but not in input)
-    const inputVariantIds = data.variants.map(v => v.id).filter(id => id && !id.startsWith('new-'));
+    const inputVariantIds = data.variants.map(v => v.id).filter(vid => vid && !vid.startsWith('new-'));
     const variantsToDelete = existingVariants.filter(ev => !inputVariantIds.includes(ev.id));
     for (const v of variantsToDelete) {
       await db.delete(productVariants).where(eq(productVariants.id, v.id));
     }
 
-    // Handle Media - just delete associations and recreate since it's just a join table
+    // Recreate media associations
     await db.delete(productMedia).where(eq(productMedia.productId, id));
     if (data.mediaIds && data.mediaIds.length > 0) {
       const mediaToInsert = data.mediaIds.map((mediaId, idx) => ({
@@ -173,6 +159,8 @@ export async function updateProduct(id: string, data: CreateProductInput) {
 
     revalidatePath("/admin/products");
     revalidatePath("/roastery");
+    revalidatePath("/");
+    revalidatePath("/product/" + data.slug);
     
     return { success: true, id };
   } catch (error: any) {
