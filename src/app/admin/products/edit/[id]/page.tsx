@@ -4,9 +4,12 @@ import { products } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 
-export default async function EditProductPage({ params }: { params: { id: string } }) {
+export default async function EditProductPage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
+  // Await params if it's a promise (Next.js 15+), otherwise use as is
+  const resolvedParams = await params;
+  
   const product = await db.query.products.findFirst({
-    where: eq(products.id, params.id),
+    where: eq(products.id, resolvedParams.id),
     with: {
       variants: true,
       media: {
