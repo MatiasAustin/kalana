@@ -103,46 +103,7 @@ export const productMedia = sqliteTable('product_media', {
   isPrimary: integer('is_primary', { mode: 'boolean' }).default(false),
 });
 
-import { relations } from 'drizzle-orm';
 
-export const productsRelations = relations(products, ({ many }) => ({
-  variants: many(productVariants),
-  media: many(productMedia),
-  collections: many(collectionProducts),
-}));
-
-export const productVariantsRelations = relations(productVariants, ({ one }) => ({
-  product: one(products, {
-    fields: [productVariants.productId],
-    references: [products.id],
-  }),
-}));
-
-export const productMediaRelations = relations(productMedia, ({ one }) => ({
-  product: one(products, {
-    fields: [productMedia.productId],
-    references: [products.id],
-  }),
-  media: one(media, {
-    fields: [productMedia.mediaId],
-    references: [media.id],
-  }),
-}));
-
-export const collectionsRelations = relations(collections, ({ many }) => ({
-  products: many(collectionProducts),
-}));
-
-export const collectionProductsRelations = relations(collectionProducts, ({ one }) => ({
-  collection: one(collections, {
-    fields: [collectionProducts.collectionId],
-    references: [collections.id],
-  }),
-  product: one(products, {
-    fields: [collectionProducts.productId],
-    references: [products.id],
-  }),
-}));
 
 
 export const collections = sqliteTable('collections', {
@@ -314,3 +275,45 @@ export const homepageSections = sqliteTable('homepage_sections', {
   isEnabled: integer('is_enabled', { mode: 'boolean' }).default(true),
   data: text('data'), // JSON blob of section specific content (headline, ctas, references)
 });
+
+import { relations } from 'drizzle-orm';
+
+export const productsRelations = relations(products, ({ many }) => ({
+  variants: many(productVariants),
+  media: many(productMedia),
+  collections: many(collectionProducts),
+}));
+
+export const productVariantsRelations = relations(productVariants, ({ one }) => ({
+  product: one(products, {
+    fields: [productVariants.productId],
+    references: [products.id],
+  }),
+}));
+
+export const productMediaRelations = relations(productMedia, ({ one }) => ({
+  product: one(products, {
+    fields: [productMedia.productId],
+    references: [products.id],
+  }),
+  media: one(media, {
+    fields: [productMedia.mediaId],
+    references: [media.id],
+  }),
+}));
+
+export const collectionsRelations = relations(collections, ({ many }) => ({
+  products: many(collectionProducts),
+}));
+
+export const collectionProductsRelations = relations(collectionProducts, ({ one }) => ({
+  collection: one(collections, {
+    fields: [collectionProducts.collectionId],
+    references: [collections.id],
+  }),
+  product: one(products, {
+    fields: [collectionProducts.productId],
+    references: [products.id],
+  }),
+}));
+
