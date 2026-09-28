@@ -160,6 +160,9 @@ export const orders = sqliteTable('orders', {
   shippingAddressId: text('shipping_address_id').references(() => addresses.id),
   billingAddressId: text('billing_address_id').references(() => addresses.id),
   notes: text('notes'),
+  paymentProvider: text('payment_provider'), // e.g., 'MAYAR', 'DOKU', 'MIDTRANS'
+  paymentToken: text('payment_token'),
+  paymentUrl: text('payment_url'),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });

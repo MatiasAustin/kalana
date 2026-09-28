@@ -40,8 +40,12 @@ export default function CheckoutPage() {
       const res = await processCheckout(formData, items);
       if (res.success) {
         clearCart();
-        alert(`Order placed successfully! Order Number: ${res.orderNumber}`);
-        router.push('/');
+        if (res.paymentUrl) {
+          window.location.href = res.paymentUrl;
+        } else {
+          alert(`Order placed successfully! Order Number: ${res.orderNumber}`);
+          router.push('/');
+        }
       } else {
         alert(res.error);
       }

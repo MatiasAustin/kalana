@@ -138,10 +138,43 @@ export async function processCheckout(formData: any, cartItems: any[]) {
     }));
     await db.insert(orderItems).values(itemsToInsert);
 
-    // Normally here you would create a Payment Gateway URL (e.g. Midtrans Snap)
-    // For now, we'll just redirect to a success page
-    
-    return { success: true, orderId, orderNumber };
+    // 7. Process Payment Gateway
+    const paymentGateway = await import('@/lib/payments').then(m => m.getPaymentGateway());
+    const paymentResult = await paymentGateway.createTransaction({
+      orderId: orderId,
+      orderNumber: orderNumber,
+      amount: total,
+      customerDetails: {
+        firstName: data.customer.firstName,
+        lastName: data.customer.lastName,
+        email: data.customer.email,
+        phone: data.customer.phone
+      },
+      items: finalItems.map(item => ({
+        id: item.variantId || item.productId || 'item',
+        name: `${item.productNameSnapshot} - ${item.variantNameSnapshot}`,
+        price: item.unitPrice,
+        quantity: item.quantity
+      }))
+    });
+
+    if (paymentResult.success && paymentResult.paymentToken) {
+      // Update order with payment tokens
+      await db.update(orders)
+        .set({
+          paymentProvider: paymentResult.provider,
+          paymentToken: paymentResult.paymentToken,
+          paymentUrl: paymentResult.paymentUrl,
+        })
+        .where(eq(orders.id, orderId));
+    }
+
+    return { 
+      success: true, 
+      orderId, 
+      orderNumber, 
+      paymentUrl: paymentResult.paymentUrl || `/checkout/success?order=${orderNumber}` 
+    };
 
   } catch (error: any) {
     console.error("[CHECKOUT_ERROR]", error);
