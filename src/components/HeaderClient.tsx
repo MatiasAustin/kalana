@@ -7,13 +7,14 @@ import { Search, Menu, X } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
-import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 
 export default function HeaderClient({ navLinks, brandName, location, socialLinks }: any) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const { openCart, items } = useCartStore();
+  const { isSignedIn, isLoaded } = useAuth();
   
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -59,16 +60,15 @@ export default function HeaderClient({ navLinks, brandName, location, socialLink
             <button className="hidden md:block text-kalana-black hover:opacity-60 transition-opacity">
               <Search className="w-4 h-4" strokeWidth={1.5} />
             </button>
-            <SignedIn>
+            {isLoaded && isSignedIn ? (
               <Link href="/account" className="hidden md:block text-[10px] tracking-[0.2em] uppercase text-kalana-black hover:opacity-60 transition-opacity">
                 Account
               </Link>
-            </SignedIn>
-            <SignedOut>
+            ) : isLoaded ? (
               <Link href="/login" className="hidden md:block text-[10px] tracking-[0.2em] uppercase text-kalana-black hover:opacity-60 transition-opacity">
                 Account
               </Link>
-            </SignedOut>
+            ) : null}
             <button 
               onClick={openCart} 
               className="relative flex items-center gap-2 text-kalana-black hover:opacity-60 transition-opacity group"
