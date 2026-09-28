@@ -127,6 +127,8 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
           method: 'PUT',
           body: media.file,
           headers: { 'Content-Type': media.file.type }
+        }).catch(err => {
+          throw new Error(`Failed to fetch. URL: ${uploadUrl.substring(0, 50)}... Error: ${err.message}`);
         });
 
         if (!uploadRes.ok) {
