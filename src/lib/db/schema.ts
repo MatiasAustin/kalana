@@ -206,6 +206,13 @@ export const siteSettings = sqliteTable('site_settings', {
   currency: text('currency'),
   timezone: text('timezone'),
   logoMediaId: text('logo_media_id').references(() => media.id),
+  
+  // Payment Gateway Settings
+  activePaymentGateway: text('active_payment_gateway').default('NONE'), // 'MAYAR', 'DOKU', 'NONE'
+  mayarApiKey: text('mayar_api_key'),
+  dokuClientId: text('doku_client_id'),
+  dokuSecretKey: text('doku_secret_key'),
+  
   updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
 

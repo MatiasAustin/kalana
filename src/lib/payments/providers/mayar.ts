@@ -4,8 +4,8 @@ export class MayarPaymentProvider implements PaymentGatewayProvider {
   private apiKey: string;
   private isProduction: boolean;
 
-  constructor() {
-    this.apiKey = process.env.MAYAR_API_KEY || '';
+  constructor(apiKey: string) {
+    this.apiKey = apiKey || process.env.MAYAR_API_KEY || '';
     this.isProduction = process.env.NODE_ENV === 'production';
   }
 

@@ -4,9 +4,9 @@ export class DokuPaymentProvider implements PaymentGatewayProvider {
   private clientId: string;
   private secretKey: string;
 
-  constructor() {
-    this.clientId = process.env.DOKU_CLIENT_ID || '';
-    this.secretKey = process.env.DOKU_SECRET_KEY || '';
+  constructor(clientId: string, secretKey: string) {
+    this.clientId = clientId || process.env.DOKU_CLIENT_ID || '';
+    this.secretKey = secretKey || process.env.DOKU_SECRET_KEY || '';
   }
 
   async createTransaction(request: PaymentTransactionRequest): Promise<PaymentTransactionResponse> {
