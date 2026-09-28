@@ -1,7 +1,17 @@
 import Link from 'next/link';
 import { Search, Filter, Plus } from 'lucide-react';
+import { db } from '@/lib/db';
+import { customers } from '@/lib/db/schema';
+import { desc } from 'drizzle-orm';
 
-export default function CustomersPage() {
+export default async function CustomersPage() {
+  const allCustomers = await db.query.customers.findMany({
+    with: {
+      orders: true
+    },
+    orderBy: [desc(customers.createdAt)],
+  });
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
@@ -50,60 +60,49 @@ export default function CustomersPage() {
               </tr>
             </thead>
             <tbody>
-              <CustomerRow 
-                name="John Doe" 
-                email="john@example.com" 
-                orders={12} 
-                type="Retail" 
-                total="Rp 1,500,000" 
-              />
-              <CustomerRow 
-                name="Sarah Smith" 
-                email="sarah@cafesmith.com" 
-                orders={4} 
-                type="Wholesale" 
-                total="Rp 12,000,000" 
-              />
-              <CustomerRow 
-                name="Alex Morgan" 
-                email="alex.m@example.com" 
-                orders={1} 
-                type="Retail" 
-                total="Rp 120,000" 
-              />
+              {allCustomers.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                    No customers found.
+                  </td>
+                </tr>
+              ) : (
+                allCustomers.map(customer => {
+                  const totalOrders = customer.orders?.length || 0;
+                  const totalSpent = customer.orders?.reduce((sum, order) => sum + (order.total || 0), 0) || 0;
+
+                  return (
+                    <tr key={customer.id} className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer group">
+                      <td className="px-6 py-4">
+                        <input type="checkbox" className="rounded border-gray-300" />
+                      </td>
+                      <td className="px-6 py-4 font-medium text-black group-hover:underline">
+                        {customer.firstName} {customer.lastName}
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">
+                        {customer.email}
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">
+                        {totalOrders}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                          customer.customerType === 'WHOLESALE' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {customer.customerType}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right text-gray-900 font-medium">
+                        IDR {totalSpent.toLocaleString('id-ID')}
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
             </tbody>
           </table>
         </div>
       </div>
     </div>
-  );
-}
-
-function CustomerRow({ name, email, orders, type, total }: any) {
-  return (
-    <tr className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer group">
-      <td className="px-6 py-4">
-        <input type="checkbox" className="rounded border-gray-300" />
-      </td>
-      <td className="px-6 py-4 font-medium text-black group-hover:underline">
-        {name}
-      </td>
-      <td className="px-6 py-4 text-gray-600">
-        {email}
-      </td>
-      <td className="px-6 py-4 text-gray-600">
-        {orders}
-      </td>
-      <td className="px-6 py-4">
-        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-          type === 'Wholesale' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
-        }`}>
-          {type}
-        </span>
-      </td>
-      <td className="px-6 py-4 text-right text-gray-900 font-medium">
-        {total}
-      </td>
-    </tr>
   );
 }

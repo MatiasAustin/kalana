@@ -1,35 +1,72 @@
 "use client";
 
-import { useCartStore } from "@/store/cartStore";
-import Link from "next/link";
-import { ChevronRight } from "lucide-react";
-
-import { useAuth } from "@clerk/nextjs";
 import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
+import { useCartStore } from "@/store/cartStore";
+import { processCheckout } from "@/lib/actions/checkout";
 
 export default function CheckoutPage() {
-  const { items } = useCartStore();
   const { isSignedIn, isLoaded } = useAuth();
   const [guestMode, setGuestMode] = useState(false);
+  const { items, clearCart } = useCartStore();
+  const router = useRouter();
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    firstName: "",
+    lastName: "",
+    address1: "",
+    address2: "",
+    city: "",
+    province: "",
+    zip: "",
+    phone: "",
+    country: "Indonesia",
+  });
 
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shipping = 20000;
+  const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const shipping = 25000;
   const total = subtotal + shipping;
 
-  if (!isLoaded) {
-    return <div className="min-h-screen bg-kalana-offwhite flex items-center justify-center font-mono text-sm tracking-widest uppercase">Loading checkout...</div>;
-  }
+  const handleCheckout = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (items.length === 0) return alert("Cart is empty");
+    
+    setIsSubmitting(true);
+    try {
+      const res = await processCheckout(formData, items);
+      if (res.success) {
+        clearCart();
+        alert(`Order placed successfully! Order Number: ${res.orderNumber}`);
+        router.push('/');
+      } else {
+        alert(res.error);
+      }
+    } catch (err: any) {
+      alert("Error processing checkout");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!isLoaded) return <div className="min-h-screen bg-kalana-offwhite flex items-center justify-center">Loading...</div>;
 
   if (!isSignedIn && !guestMode) {
     return (
-      <div className="min-h-screen bg-kalana-offwhite flex flex-col items-center justify-center p-4">
-        <div className="mb-12 text-center">
-          <h1 className="text-2xl font-bold tracking-widest uppercase font-mono">Sign in to continue</h1>
-          <p className="text-sm text-kalana-black/60 mt-2 font-mono">Save your details for faster checkout</p>
-        </div>
-        <div className="space-y-4 w-full max-w-xs flex flex-col">
-          <Link href="/login" className="px-6 py-4 bg-kalana-black text-kalana-offwhite text-center font-mono text-xs tracking-widest hover:bg-black/80 transition-colors">SIGN IN</Link>
-          <Link href="/signup" className="px-6 py-4 border border-kalana-black text-kalana-black text-center font-mono text-xs tracking-widest hover:bg-kalana-black/5 transition-colors">CREATE ACCOUNT</Link>
+      <div className="min-h-screen bg-kalana-offwhite text-kalana-black flex items-center justify-center">
+        <div className="max-w-md w-full px-6 flex flex-col items-center">
+          <h1 className="text-3xl font-medium tracking-tight mb-8">Checkout</h1>
+          <div className="w-full space-y-4">
+            <Link href="/login" className="block w-full py-4 bg-kalana-black text-kalana-offwhite text-center font-semibold text-[10px] tracking-[0.2em] uppercase hover:bg-kalana-black/80 transition-colors">
+              Sign In
+            </Link>
+            <Link href="/signup" className="block w-full py-4 border border-kalana-black text-kalana-black text-center font-semibold text-[10px] tracking-[0.2em] uppercase hover:bg-kalana-black/5 transition-colors">
+              Create Account
+            </Link>
+          </div>
           <button onClick={() => setGuestMode(true)} className="mt-8 px-6 py-4 text-kalana-black/60 text-center font-mono text-xs tracking-widest hover:text-kalana-black transition-colors underline underline-offset-4">CONTINUE AS GUEST</button>
         </div>
       </div>
@@ -55,13 +92,16 @@ export default function CheckoutPage() {
             <span>Payment</span>
           </div>
 
-          <form className="space-y-16">
+          <form onSubmit={handleCheckout} className="space-y-16">
             {/* Contact */}
             <section>
               <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] mb-6 text-kalana-black/50">Contact</h2>
               <div className="space-y-4">
                 <input 
                   type="email" 
+                  required
+                  value={formData.email}
+                  onChange={e => setFormData({...formData, email: e.target.value})}
                   placeholder="Email Address" 
                   className="w-full bg-transparent border-b border-kalana-black/20 px-0 py-4 focus:outline-none focus:border-kalana-black transition-colors text-xs tracking-wider uppercase placeholder:text-kalana-black/30"
                 />
@@ -75,39 +115,67 @@ export default function CheckoutPage() {
                 <div className="grid grid-cols-2 gap-8">
                   <input 
                     type="text" 
+                    required
+                    value={formData.firstName}
+                    onChange={e => setFormData({...formData, firstName: e.target.value})}
                     placeholder="First Name" 
                     className="w-full bg-transparent border-b border-kalana-black/20 px-0 py-4 focus:outline-none focus:border-kalana-black transition-colors text-xs tracking-wider uppercase placeholder:text-kalana-black/30"
                   />
                   <input 
                     type="text" 
+                    required
+                    value={formData.lastName}
+                    onChange={e => setFormData({...formData, lastName: e.target.value})}
                     placeholder="Last Name" 
                     className="w-full bg-transparent border-b border-kalana-black/20 px-0 py-4 focus:outline-none focus:border-kalana-black transition-colors text-xs tracking-wider uppercase placeholder:text-kalana-black/30"
                   />
                 </div>
                 <input 
                   type="text" 
+                  required
+                  value={formData.address1}
+                  onChange={e => setFormData({...formData, address1: e.target.value})}
                   placeholder="Address" 
                   className="w-full bg-transparent border-b border-kalana-black/20 px-0 py-4 focus:outline-none focus:border-kalana-black transition-colors text-xs tracking-wider uppercase placeholder:text-kalana-black/30"
                 />
                 <input 
                   type="text" 
+                  value={formData.address2}
+                  onChange={e => setFormData({...formData, address2: e.target.value})}
                   placeholder="Apartment, suite, etc. (optional)" 
                   className="w-full bg-transparent border-b border-kalana-black/20 px-0 py-4 focus:outline-none focus:border-kalana-black transition-colors text-xs tracking-wider uppercase placeholder:text-kalana-black/30"
                 />
                 <div className="grid grid-cols-2 gap-8">
                   <input 
                     type="text" 
+                    required
+                    value={formData.city}
+                    onChange={e => setFormData({...formData, city: e.target.value})}
                     placeholder="City" 
                     className="w-full bg-transparent border-b border-kalana-black/20 px-0 py-4 focus:outline-none focus:border-kalana-black transition-colors text-xs tracking-wider uppercase placeholder:text-kalana-black/30"
                   />
                   <input 
                     type="text" 
+                    required
+                    value={formData.zip}
+                    onChange={e => setFormData({...formData, zip: e.target.value})}
                     placeholder="Postal Code" 
                     className="w-full bg-transparent border-b border-kalana-black/20 px-0 py-4 focus:outline-none focus:border-kalana-black transition-colors text-xs tracking-wider uppercase placeholder:text-kalana-black/30"
                   />
                 </div>
                 <input 
+                  type="text" 
+                  required
+                  value={formData.province}
+                  onChange={e => setFormData({...formData, province: e.target.value})}
+                  placeholder="Province / State" 
+                  className="w-full bg-transparent border-b border-kalana-black/20 px-0 py-4 focus:outline-none focus:border-kalana-black transition-colors text-xs tracking-wider uppercase placeholder:text-kalana-black/30"
+                />
+                <input 
                   type="tel" 
+                  required
+                  value={formData.phone}
+                  onChange={e => setFormData({...formData, phone: e.target.value})}
                   placeholder="Phone Number" 
                   className="w-full bg-transparent border-b border-kalana-black/20 px-0 py-4 focus:outline-none focus:border-kalana-black transition-colors text-xs tracking-wider uppercase placeholder:text-kalana-black/30"
                 />
@@ -118,8 +186,8 @@ export default function CheckoutPage() {
               <Link href="/cart" className="text-[10px] text-kalana-black/50 hover:text-kalana-black transition-colors tracking-[0.2em] uppercase border-b border-transparent hover:border-kalana-black pb-1">
                 Return to cart
               </Link>
-              <button type="button" className="px-12 py-5 bg-kalana-black text-kalana-offwhite text-[10px] font-semibold tracking-[0.2em] uppercase hover:bg-kalana-black/80 transition-colors">
-                Continue to Payment
+              <button disabled={isSubmitting} type="submit" className="px-12 py-5 bg-kalana-black text-kalana-offwhite text-[10px] font-semibold tracking-[0.2em] uppercase hover:bg-kalana-black/80 transition-colors disabled:opacity-70">
+                {isSubmitting ? 'Processing...' : 'Place Order'}
               </button>
             </div>
           </form>

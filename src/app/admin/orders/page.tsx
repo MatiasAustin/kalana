@@ -1,7 +1,18 @@
 import Link from 'next/link';
-import { Search, Filter, Download } from 'lucide-react';
+import { Search, Filter, Download, MoreHorizontal } from 'lucide-react';
+import { db } from '@/lib/db';
+import { orders } from '@/lib/db/schema';
+import { desc } from 'drizzle-orm';
+import { format } from 'date-fns';
 
-export default function OrdersPage() {
+export default async function OrdersPage() {
+  const allOrders = await db.query.orders.findMany({
+    with: {
+      customer: true
+    },
+    orderBy: [desc(orders.createdAt)],
+  });
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
@@ -10,9 +21,6 @@ export default function OrdersPage() {
           <button className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 flex items-center">
             <Download className="w-4 h-4 mr-2" />
             Export
-          </button>
-          <button className="bg-black text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition-colors">
-            Create Order
           </button>
         </div>
       </div>
@@ -56,70 +64,58 @@ export default function OrdersPage() {
               </tr>
             </thead>
             <tbody>
-              <OrderRow 
-                id="#KALANA-1025" 
-                date="Today at 14:30" 
-                customer="Alex Morgan" 
-                payment="Paid" 
-                fulfillment="Unfulfilled" 
-                total="Rp 120,000" 
-              />
-              <OrderRow 
-                id="#KALANA-1024" 
-                date="Yesterday at 11:20" 
-                customer="John Doe" 
-                payment="Paid" 
-                fulfillment="Fulfilled" 
-                total="Rp 178,000" 
-              />
-              <OrderRow 
-                id="#KALANA-1023" 
-                date="Sep 26 at 09:15" 
-                customer="Sarah Smith" 
-                payment="Pending" 
-                fulfillment="Unfulfilled" 
-                total="Rp 350,000" 
-              />
+              {allOrders.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                    No orders found.
+                  </td>
+                </tr>
+              ) : (
+                allOrders.map(order => (
+                  <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50 group">
+                    <td className="px-6 py-4">
+                      <input type="checkbox" className="rounded border-gray-300" />
+                    </td>
+                    <td className="px-6 py-4 font-medium text-black">
+                      {order.orderNumber}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600">
+                      {order.createdAt ? format(new Date(order.createdAt), "MMM d, yyyy h:mm a") : "-"}
+                    </td>
+                    <td className="px-6 py-4 text-gray-900">
+                      {order.customer ? `${order.customer.firstName} ${order.customer.lastName}` : "Guest"}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                        order.paymentStatus === 'PAID' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {order.paymentStatus}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                        order.fulfillmentStatus === 'FULFILLED' ? 'bg-gray-100 text-gray-800' : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {order.fulfillmentStatus}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right text-gray-900">
+                      IDR {order.total.toLocaleString('id-ID')}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
+        <div className="p-4 border-t border-gray-200 flex items-center justify-between text-sm text-gray-500">
+          <span>Showing {allOrders.length} orders</span>
+          <div className="flex gap-2">
+            <button className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50" disabled>Previous</button>
+            <button className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50" disabled>Next</button>
+          </div>
+        </div>
       </div>
     </div>
-  );
-}
-
-function OrderRow({ id, date, customer, payment, fulfillment, total }: any) {
-  return (
-    <tr className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer group">
-      <td className="px-6 py-4">
-        <input type="checkbox" className="rounded border-gray-300" />
-      </td>
-      <td className="px-6 py-4 font-medium text-black group-hover:underline">
-        {id}
-      </td>
-      <td className="px-6 py-4 text-gray-600">
-        {date}
-      </td>
-      <td className="px-6 py-4 text-gray-900">
-        {customer}
-      </td>
-      <td className="px-6 py-4">
-        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-          payment === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-        }`}>
-          {payment}
-        </span>
-      </td>
-      <td className="px-6 py-4">
-        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-          fulfillment === 'Fulfilled' ? 'bg-gray-100 text-gray-800' : 'bg-yellow-100 text-yellow-800'
-        }`}>
-          {fulfillment}
-        </span>
-      </td>
-      <td className="px-6 py-4 text-right text-gray-900">
-        {total}
-      </td>
-    </tr>
   );
 }
