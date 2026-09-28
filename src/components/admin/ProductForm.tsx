@@ -79,6 +79,21 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.name) {
+      setError("Product Title is required.");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    for (const v of variants) {
+      if (!v.name || v.price === undefined || v.price === '') {
+        setError("All variants must have a name and a price.");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+    }
+
     setIsSubmitting(true);
     setError(null);
 
@@ -159,11 +174,13 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
         router.refresh();
       } else {
         setError(result.error || 'Failed to save product');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         setIsSubmitting(false);
       }
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'An error occurred during save.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       setIsSubmitting(false);
     }
   };
@@ -193,7 +210,6 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
               <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
               <input 
                 type="text" 
-                required
                 value={formData.name}
                 onChange={e => setFormData({...formData, name: e.target.value})}
                 placeholder="e.g., DAILY HOUSE" 
@@ -294,7 +310,6 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
                       <label className="block text-xs font-medium text-gray-700 mb-1">Variant Name</label>
                       <input 
                         type="text" 
-                        required
                         value={variant.name}
                         onChange={e => handleVariantChange(idx, 'name', e.target.value)}
                         placeholder="e.g. 200g, 1kg, Red, Blue" 
@@ -315,7 +330,6 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
                       <label className="block text-xs font-medium text-gray-700 mb-1">Price (IDR)</label>
                       <input 
                         type="number" 
-                        required
                         value={variant.price}
                         onChange={e => handleVariantChange(idx, 'price', e.target.value)}
                         className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black" 
