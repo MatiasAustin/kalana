@@ -112,7 +112,7 @@ export async function getProductByHandle(handle: string) {
     // Sort variants by price or weight if needed, here just keeping them as is
     // Actually we sort media by sortOrder
     if (product.media) {
-      product.media.sort((a, b) => a.sortOrder - b.sortOrder);
+      product.media.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
     }
   }
 

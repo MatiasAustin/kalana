@@ -137,7 +137,7 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
         slug: finalSlug,
         description: formData.description,
         status: formData.status as any,
-        variants: variants.map(v => ({
+        variants: variants.map((v: any) => ({
           id: v.id,
           name: v.name,
           sku: v.sku,
@@ -277,7 +277,7 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
             </div>
             
             <div className="space-y-4">
-              {variants.map((variant, idx) => (
+              {variants.map((variant: any, idx: number) => (
                 <div key={variant.id || idx} className="border border-gray-200 rounded-md p-4 bg-gray-50 space-y-3 relative">
                   {variants.length > 1 && (
                     <button 
