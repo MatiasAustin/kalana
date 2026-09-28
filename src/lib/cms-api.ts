@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { db } from '@/lib/db';
-import { siteSettings, products, locations } from '@/lib/db/schema';
+import { siteSettings, products, locations, socialLinks } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 // Abstraction for CMS Data Fetching
@@ -66,11 +66,26 @@ export async function getProductByHandle(handle: string) {
 }
 
 export async function getSocialLinks() {
-  const data = await getCmsData();
-  return data.socialLinks.filter((link: any) => link.active);
+  const links = await db.query.socialLinks.findMany({
+    where: eq(socialLinks.isActive, true),
+    orderBy: (socials, { asc }) => [asc(socials.sortOrder)]
+  });
+
+  if (!links || links.length === 0) {
+    const data = await getCmsData();
+    return data.socialLinks.filter((link: any) => link.active);
+  }
+  return links;
 }
 
 export async function getLocation() {
-  const data = await getCmsData();
-  return data.location;
+  const location = await db.query.locations.findFirst({
+    where: eq(locations.isPrimary, true)
+  });
+
+  if (!location) {
+    const data = await getCmsData();
+    return data.location;
+  }
+  return location;
 }
