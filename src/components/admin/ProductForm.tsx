@@ -186,7 +186,7 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-5xl mx-auto space-y-6 pb-20">
+    <form id="product-form" onSubmit={handleSubmit} className="max-w-5xl mx-auto space-y-6 pb-20">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link href="/admin/products" className="p-2 border border-gray-300 rounded-md hover:bg-gray-50 text-gray-600">
@@ -374,6 +374,7 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
         </Link>
         <button 
           type="submit" 
+          form="product-form"
           disabled={isSubmitting}
           className="px-4 py-2 bg-black text-white rounded-md text-sm font-medium hover:bg-gray-800 disabled:opacity-70 flex items-center"
         >
