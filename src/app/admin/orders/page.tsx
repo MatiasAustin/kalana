@@ -3,7 +3,6 @@ import { Search, Filter, Download, MoreHorizontal } from 'lucide-react';
 import { db } from '@/lib/db';
 import { orders } from '@/lib/db/schema';
 import { desc } from 'drizzle-orm';
-import { format } from 'date-fns';
 
 export default async function OrdersPage() {
   const allOrders = await db.query.orders.findMany({
@@ -80,7 +79,7 @@ export default async function OrdersPage() {
                       {order.orderNumber}
                     </td>
                     <td className="px-6 py-4 text-gray-600">
-                      {order.createdAt ? format(new Date(order.createdAt), "MMM d, yyyy h:mm a") : "-"}
+                      {order.createdAt ? new Date(order.createdAt).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' }) : "-"}
                     </td>
                     <td className="px-6 py-4 text-gray-900">
                       {order.customer ? `${order.customer.firstName} ${order.customer.lastName}` : "Guest"}

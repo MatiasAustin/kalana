@@ -5,7 +5,6 @@ import { ArrowLeft, Package } from "lucide-react";
 import { db } from "@/lib/db";
 import { users, customers, orders, orderItems } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
-import { format } from "date-fns";
 
 export default async function CustomerOrdersPage() {
   const { userId } = await auth();
@@ -67,7 +66,7 @@ export default async function CustomerOrdersPage() {
                 </div>
                 <div>
                   <p className="text-[10px] tracking-widest uppercase text-kalana-black/50 mb-1">Date</p>
-                  <p className="font-medium tracking-wide">{order.createdAt ? format(new Date(order.createdAt), "MMM d, yyyy") : "-"}</p>
+                  <p className="font-medium tracking-wide">{order.createdAt ? new Date(order.createdAt).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }) : "-"}</p>
                 </div>
                 <div>
                   <p className="text-[10px] tracking-widest uppercase text-kalana-black/50 mb-1">Total</p>
