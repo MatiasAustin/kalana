@@ -103,7 +103,7 @@ export default async function Home() {
                 </div>
                 <Link href={`/product/${product.slug}`} className="w-full aspect-[4/5] bg-kalana-black/5 border border-kalana-black/10 relative mb-8 overflow-hidden group">
   {product.media && product.media.length > 0 ? (
-    <img src={product.media.find((m) => m.isPrimary)?.media?.url || product.media[0]?.media?.url} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+    <img src={product.media.find((m: any) => m.isPrimary)?.media?.url || product.media[0]?.media?.url} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
   ) : (
     <div className="absolute inset-0 bg-kalana-black/10 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
   )}
