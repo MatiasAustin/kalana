@@ -147,10 +147,10 @@ export async function processCheckout(formData: any, cartItems: any[]) {
         orderNumber: orderNumber,
         amount: total,
         customerDetails: {
-          firstName: data.customer.firstName,
-          lastName: data.customer.lastName,
-          email: data.customer.email,
-          phone: data.customer.phone
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone
         },
         items: finalItems.map(item => ({
           id: item.variantId || item.productId || 'item',
