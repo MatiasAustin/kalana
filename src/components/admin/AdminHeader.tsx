@@ -35,7 +35,7 @@ export function AdminHeader() {
         </button>
 
         <div className="relative flex items-center">
-          <UserButton afterSignOutUrl="/login" />
+          <UserButton />
         </div>
       </div>
     </header>
