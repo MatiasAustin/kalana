@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
 import { ClerkProvider } from '@clerk/nextjs'
+import StorefrontOnly from "@/components/StorefrontOnly";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -22,12 +23,16 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${inter.variable} font-sans antialiased bg-kalana-offwhite text-kalana-black min-h-screen flex flex-col`}>
-          <Header />
+          <StorefrontOnly>
+            <Header />
+          </StorefrontOnly>
           <main className="flex-grow">
             {children}
           </main>
-          <Footer />
-          <CartDrawer />
+          <StorefrontOnly>
+            <Footer />
+            <CartDrawer />
+          </StorefrontOnly>
         </body>
       </html>
     </ClerkProvider>
