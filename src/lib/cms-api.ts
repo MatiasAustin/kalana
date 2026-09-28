@@ -42,8 +42,27 @@ export async function getProducts() {
 }
 
 export async function getProductByHandle(handle: string) {
-  const data = await getCmsData();
-  return data.products.find((p: any) => p.handle === handle);
+  const product = await db.query.products.findFirst({
+    where: eq(products.slug, handle),
+    with: {
+      variants: true,
+      media: {
+        with: {
+          media: true
+        }
+      }
+    }
+  });
+
+  if (product && product.variants) {
+    // Sort variants by price or weight if needed, here just keeping them as is
+    // Actually we sort media by sortOrder
+    if (product.media) {
+      product.media.sort((a, b) => a.sortOrder - b.sortOrder);
+    }
+  }
+
+  return product;
 }
 
 export async function getSocialLinks() {
