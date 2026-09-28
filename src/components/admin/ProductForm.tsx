@@ -129,7 +129,10 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
           headers: { 'Content-Type': media.file.type }
         });
 
-        if (!uploadRes.ok) throw new Error('Failed to upload file to R2');
+        if (!uploadRes.ok) {
+          const text = await uploadRes.text().catch(() => '');
+          throw new Error(`Failed to upload file to R2: ${uploadRes.status} ${uploadRes.statusText} ${text}`);
+        }
 
         // Create Media Record in Turso
         const mediaRecord = await createMediaRecord({
