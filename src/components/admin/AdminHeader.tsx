@@ -1,5 +1,6 @@
 import { Bell, Search, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
+import { UserButton } from '@clerk/nextjs';
 
 export function AdminHeader() {
   return (
@@ -30,15 +31,11 @@ export function AdminHeader() {
         <button className="text-gray-400 hover:text-gray-500 relative">
           <span className="sr-only">View notifications</span>
           <Bell className="h-6 w-6" />
-          <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-400 ring-2 ring-white" />
+          {/* <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-400 ring-2 ring-white" /> */}
         </button>
 
-        <div className="relative">
-          <button className="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition duration-150 ease-in-out">
-            <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold">
-              M
-            </div>
-          </button>
+        <div className="relative flex items-center">
+          <UserButton afterSignOutUrl="/login" />
         </div>
       </div>
     </header>
