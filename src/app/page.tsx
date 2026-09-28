@@ -1,15 +1,29 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { getHomepage, getProducts, getLocation } from "@/lib/cms-api";
+import { getHomepage, getLocation } from "@/lib/cms-api";
+import { db } from "@/lib/db";
+import { products, productVariants, productMedia } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 export default async function Home() {
   const homepage = await getHomepage();
-  const products = await getProducts();
   const location = await getLocation();
 
-  // Get only featured products for the collection
-  const featuredProducts = products.filter((p: any) => p.collection === homepage.featuredCollection.collectionHandle);
+  // Fetch products dynamically from DB
+  const dbProducts = await db.query.products.findMany({
+    where: eq(products.status, 'ACTIVE'),
+    with: {
+      variants: true,
+      media: {
+        with: {
+          media: true
+        }
+      }
+    }
+  });
+
+  const featuredProducts = dbProducts.slice(0, 2);
 
   return (
     <div className="w-full bg-kalana-offwhite text-kalana-black">
@@ -81,16 +95,22 @@ export default async function Home() {
                   <div>
                     <h3 className="text-2xl font-semibold uppercase tracking-wide mb-4">{product.name}</h3>
                     <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-[10px] tracking-widest uppercase text-kalana-black/60">
-                      <span>{product.blend}</span>
-                      <span>{product.roast}</span>
-                      <span className="col-span-2 mt-2">{product.tastingNotes}</span>
+                      <span>{product.blend || '-'}</span>
+                      <span>{product.roast || '-'}</span>
+                      <span className="col-span-2 mt-2">{product.tastingNotes || '-'}</span>
                     </div>
                   </div>
                 </div>
-                <div className="w-full aspect-[4/5] bg-kalana-black/5 border border-kalana-black/10 relative mb-8"></div>
+                <Link href={`/product/${product.slug}`} className="w-full aspect-[4/5] bg-kalana-black/5 border border-kalana-black/10 relative mb-8 overflow-hidden group">
+  {product.media && product.media.length > 0 ? (
+    <img src={product.media.find((m) => m.isPrimary)?.media?.url || product.media[0]?.media?.url} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+  ) : (
+    <div className="absolute inset-0 bg-kalana-black/10 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+  )}
+</Link>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">{product.price}</span>
-                  <Link href={`/product/${product.handle}`} className="text-[10px] font-semibold tracking-[0.2em] uppercase border-b border-kalana-black pb-1 hover:opacity-50 transition-opacity">
+                  <span className="text-sm font-medium">{`IDR ${product.variants?.[0]?.price?.toLocaleString('id-ID') || 0}`}</span>
+                  <Link href={`/product/${product.slug}`} className="text-[10px] font-semibold tracking-[0.2em] uppercase border-b border-kalana-black pb-1 hover:opacity-50 transition-opacity">
                     View Product →
                   </Link>
                 </div>
