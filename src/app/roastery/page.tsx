@@ -4,6 +4,14 @@ import { db } from "@/lib/db";
 import { products } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { getPageContent } from "@/lib/cms-api";
+import type { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "The Roastery & Coffee | KALANA",
+  description: "Produced in small batches. Designed for consistency, clarity, and daily enjoyment.",
+};
 
 export default async function RoasteryPage() {
   const [allProducts, page] = await Promise.all([
@@ -27,25 +35,39 @@ export default async function RoasteryPage() {
       
       {/* Editorial Hero Section */}
       <section className="relative w-full px-6 lg:px-12 mb-32">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 border-b border-kalana-black/20 pb-24">
-          <div className="lg:col-span-8 flex flex-col justify-between">
-            <p className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 mb-8">
-              {page.eyebrow || "02 / Roastery"}
-            </p>
-            <h1 
-              className="text-[10vw] lg:text-[140px] font-semibold tracking-tighter uppercase leading-[0.85] mb-12 max-w-4xl"
-              dangerouslySetInnerHTML={{ __html: page.headline || "Coffee<br/>For Everyday<br/>Rituals." }}
-            />
-          </div>
-          
-          <div className="lg:col-span-4 flex items-end">
-            <div className="border-l border-kalana-black/20 pl-6 mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 border-b border-kalana-black/20 pb-24 items-end">
+          <div className="lg:col-span-7 flex flex-col justify-between">
+            <div>
+              <p className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 mb-8 font-mono">
+                {page.eyebrow || "02 / Roastery"}
+              </p>
+              <h1 
+                className="text-[10vw] lg:text-[120px] font-semibold tracking-tighter uppercase leading-[0.85] mb-12 max-w-4xl"
+                dangerouslySetInnerHTML={{ __html: page.headline || "Coffee<br/>For Everyday<br/>Rituals." }}
+              />
+            </div>
+            
+            <div className="border-l border-kalana-black/20 pl-6 max-w-md">
               <p className="text-sm font-light text-kalana-black/80 leading-relaxed mb-6">
                 {page.description || "Produced in small batches. Designed for consistency, clarity, and daily enjoyment."}
               </p>
-              <Link href="/roastery/collection" className="text-[10px] tracking-[0.2em] uppercase border-b border-kalana-black pb-1 hover:opacity-50 transition-opacity">
+              <Link href="/roastery/collection" className="text-[10px] tracking-[0.2em] uppercase border-b border-kalana-black pb-1 hover:opacity-50 transition-opacity font-mono">
                 All Collections →
               </Link>
+            </div>
+          </div>
+          
+          <div className="lg:col-span-5">
+            <div className="w-full aspect-[4/5] bg-kalana-black/5 border border-kalana-black/10 relative overflow-hidden group">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={page.heroImage || "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=1600&auto=format&fit=crop"}
+                alt={page.headline ? page.headline.replace(/<[^>]+>/g, " ") : "Roastery Hero"}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute bottom-4 left-4 bg-kalana-black/80 backdrop-blur-sm text-kalana-offwhite px-3 py-1 text-[10px] tracking-[0.2em] uppercase font-mono">
+                Cikampek Roastery & Bar
+              </div>
             </div>
           </div>
         </div>

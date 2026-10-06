@@ -430,6 +430,14 @@ export function PagesEditor({ initialPagesData, customPages: initialCustom = [] 
                   />
                 </div>
 
+                <ImageUploadField
+                  label="Roastery Hero Photography"
+                  value={currentPage.heroImage || ""}
+                  onChange={(url) => handleUpdateField("heroImage", url)}
+                  aspectRatio="portrait"
+                  helperText="Primary architectural or roasting craft photo for the roastery page header"
+                />
+
                 <div className="pt-4 border-t border-gray-200 space-y-4">
                   <h3 className="font-bold text-gray-900 uppercase">Featured Collection Info</h3>
                   <div>

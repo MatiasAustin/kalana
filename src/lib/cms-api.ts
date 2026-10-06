@@ -296,6 +296,7 @@ export function getDefaultPageContent(slug: string): any {
       eyebrow: "02 / Roastery",
       headline: "Coffee<br/>For Everyday<br/>Rituals.",
       description: "Produced in small batches. Designed for consistency, clarity, and daily enjoyment.",
+      heroImage: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=1600&auto=format&fit=crop",
       collectionBadge: "Collection / 01",
       collectionTitle: "Daily Series.",
       collectionDesc: "Everyday blends designed for consistency, versatility, and easy drinking. Built to perform across espresso, americano, and milk-based coffee.",
