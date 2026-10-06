@@ -3,20 +3,25 @@ import { ArrowRight } from "lucide-react";
 import { db } from "@/lib/db";
 import { products } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
+import { getPageContent } from "@/lib/cms-api";
 
 export default async function RoasteryPage() {
-  const allProducts = await db.query.products.findMany({
-    where: eq(products.status, 'ACTIVE'),
-    with: {
-      variants: true,
-      media: {
-        with: {
-          media: true
+  const [allProducts, page] = await Promise.all([
+    db.query.products.findMany({
+      where: eq(products.status, 'ACTIVE'),
+      with: {
+        variants: true,
+        media: {
+          with: {
+            media: true
+          }
         }
-      }
-    },
-    orderBy: [desc(products.createdAt)],
-  }).catch(() => []);
+      },
+      orderBy: [desc(products.createdAt)],
+    }).catch(() => []),
+    getPageContent("roastery")
+  ]);
+
   return (
     <div className="w-full bg-kalana-offwhite pt-32 text-kalana-black min-h-screen">
       
@@ -24,16 +29,19 @@ export default async function RoasteryPage() {
       <section className="relative w-full px-6 lg:px-12 mb-32">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 border-b border-kalana-black/20 pb-24">
           <div className="lg:col-span-8 flex flex-col justify-between">
-            <p className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 mb-8">02 / Roastery</p>
-            <h1 className="text-[10vw] lg:text-[140px] font-semibold tracking-tighter uppercase leading-[0.85] mb-12 max-w-4xl">
-              Coffee<br/>For Everyday<br/>Rituals.
-            </h1>
+            <p className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 mb-8">
+              {page.eyebrow || "02 / Roastery"}
+            </p>
+            <h1 
+              className="text-[10vw] lg:text-[140px] font-semibold tracking-tighter uppercase leading-[0.85] mb-12 max-w-4xl"
+              dangerouslySetInnerHTML={{ __html: page.headline || "Coffee<br/>For Everyday<br/>Rituals." }}
+            />
           </div>
           
           <div className="lg:col-span-4 flex items-end">
             <div className="border-l border-kalana-black/20 pl-6 mb-4">
               <p className="text-sm font-light text-kalana-black/80 leading-relaxed mb-6">
-                Produced in small batches. Designed for consistency, clarity, and daily enjoyment.
+                {page.description || "Produced in small batches. Designed for consistency, clarity, and daily enjoyment."}
               </p>
               <Link href="/roastery/collection" className="text-[10px] tracking-[0.2em] uppercase border-b border-kalana-black pb-1 hover:opacity-50 transition-opacity">
                 All Collections →
@@ -52,11 +60,15 @@ export default async function RoasteryPage() {
         <div className="container mx-auto">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-24 gap-12">
             <div>
-              <p className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 mb-4">Collection / 01</p>
-              <h2 className="text-5xl md:text-7xl font-semibold tracking-tight uppercase leading-none">Daily Series.</h2>
+              <p className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 mb-4">
+                {page.collectionBadge || "Collection / 01"}
+              </p>
+              <h2 className="text-5xl md:text-7xl font-semibold tracking-tight uppercase leading-none">
+                {page.collectionTitle || "Daily Series."}
+              </h2>
             </div>
             <p className="text-sm tracking-wide max-w-sm text-kalana-black/70">
-              Everyday blends designed for consistency, versatility, and easy drinking. Built to perform across espresso, americano, and milk-based coffee.
+              {page.collectionDesc || "Everyday blends designed for consistency, versatility, and easy drinking. Built to perform across espresso, americano, and milk-based coffee."}
             </p>
           </div>
 
@@ -111,25 +123,41 @@ export default async function RoasteryPage() {
       <section className="py-32 px-6 lg:px-12 bg-kalana-black text-kalana-offwhite">
         <div className="container mx-auto">
           <div className="flex justify-between items-end border-b border-kalana-offwhite/20 pb-8 mb-16">
-             <h2 className="text-xs tracking-[0.2em] uppercase text-kalana-offwhite/50">In Development</h2>
-             <span className="text-[10px] tracking-widest uppercase">Future Series</span>
+             <h2 className="text-xs tracking-[0.2em] uppercase text-kalana-offwhite/50">
+               {page.futureSeriesTag || "In Development"}
+             </h2>
+             <span className="text-[10px] tracking-widest uppercase">
+               {page.futureSeriesTitle || "Future Series"}
+             </span>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div className="border border-kalana-offwhite/20 py-24 px-8 flex flex-col items-center">
               <span className="text-[10px] tracking-[0.2em] uppercase text-kalana-offwhite/30 mb-8">Series / 02</span>
-              <h3 className="text-2xl font-medium tracking-tight uppercase mb-4 text-kalana-offwhite/80">Signature</h3>
-              <p className="text-xs text-kalana-offwhite/40 tracking-wide font-light max-w-[200px]">Complex single origins.</p>
+              <h3 className="text-2xl font-medium tracking-tight uppercase mb-4 text-kalana-offwhite/80">
+                {page.series2Title || "Signature"}
+              </h3>
+              <p className="text-xs text-kalana-offwhite/40 tracking-wide font-light max-w-[200px]">
+                {page.series2Desc || "Complex single origins."}
+              </p>
             </div>
             <div className="border border-kalana-offwhite/20 py-24 px-8 flex flex-col items-center">
               <span className="text-[10px] tracking-[0.2em] uppercase text-kalana-offwhite/30 mb-8">Series / 03</span>
-              <h3 className="text-2xl font-medium tracking-tight uppercase mb-4 text-kalana-offwhite/80">Specialty</h3>
-              <p className="text-xs text-kalana-offwhite/40 tracking-wide font-light max-w-[200px]">Microlots & experimentals.</p>
+              <h3 className="text-2xl font-medium tracking-tight uppercase mb-4 text-kalana-offwhite/80">
+                {page.series3Title || "Specialty"}
+              </h3>
+              <p className="text-xs text-kalana-offwhite/40 tracking-wide font-light max-w-[200px]">
+                {page.series3Desc || "Microlots & experimentals."}
+              </p>
             </div>
             <div className="border border-kalana-offwhite/20 py-24 px-8 flex flex-col items-center">
               <span className="text-[10px] tracking-[0.2em] uppercase text-kalana-offwhite/30 mb-8">Series / 04</span>
-              <h3 className="text-2xl font-medium tracking-tight uppercase mb-4 text-kalana-offwhite/80">Limited</h3>
-              <p className="text-xs text-kalana-offwhite/40 tracking-wide font-light max-w-[200px]">Seasonal drops.</p>
+              <h3 className="text-2xl font-medium tracking-tight uppercase mb-4 text-kalana-offwhite/80">
+                {page.series4Title || "Limited"}
+              </h3>
+              <p className="text-xs text-kalana-offwhite/40 tracking-wide font-light max-w-[200px]">
+                {page.series4Desc || "Seasonal drops."}
+              </p>
             </div>
           </div>
         </div>

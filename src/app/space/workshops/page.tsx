@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { db } from "@/lib/db";
 import { events } from "@/lib/db/schema";
 import { desc } from "drizzle-orm";
+import { getPageContent } from "@/lib/cms-api";
 
 const DEFAULT_EVENTS = [
   { date: "Oct 12, 2026", title: "Manual Brew Basics", type: "Coffee Education", price: "IDR 150.000", desc: "Learn the fundamentals of pour-over coffee, from grind size to extraction.", registrationUrl: "" },
@@ -11,9 +12,12 @@ const DEFAULT_EVENTS = [
 ];
 
 export default async function WorkshopsPage() {
-  const dbEvents = await db.query.events.findMany({
-    orderBy: [desc(events.date)]
-  }).catch(() => []);
+  const [dbEvents, page] = await Promise.all([
+    db.query.events.findMany({
+      orderBy: [desc(events.date)]
+    }).catch(() => []),
+    getPageContent("workshops")
+  ]);
 
   const displayEvents = dbEvents.length > 0 
     ? dbEvents.map((ev) => ({
@@ -30,17 +34,19 @@ export default async function WorkshopsPage() {
     <div className="w-full bg-kalana-offwhite text-kalana-black pt-32 pb-24 min-h-screen relative overflow-hidden">
       
       <div className="absolute top-1/2 right-6 -translate-y-1/2 vertical-text text-[10px] tracking-[0.2em] uppercase text-kalana-black/30 hidden lg:block">
-        03 / Workshops
+        {page.eyebrow || "03 / Workshops"}
       </div>
 
       <div className="container mx-auto px-6 lg:px-12">
         <div className="flex justify-between items-end border-b border-kalana-black/20 pb-8 mb-24">
           <div>
-            <p className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 mb-4">Space</p>
-            <h1 className="text-5xl md:text-7xl font-semibold tracking-tighter uppercase leading-none">Workshops.</h1>
+            <p className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 mb-4">{page.eyebrow || "Space"}</p>
+            <h1 className="text-5xl md:text-7xl font-semibold tracking-tighter uppercase leading-none">
+              {page.title || "Workshops."}
+            </h1>
           </div>
           <p className="text-sm font-light text-kalana-black/70 max-w-xs text-right">
-            Gatherings designed around coffee, creativity, and community.
+            {page.description || "Gatherings designed around coffee, creativity, and community."}
           </p>
         </div>
 

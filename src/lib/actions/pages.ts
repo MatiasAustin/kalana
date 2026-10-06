@@ -36,12 +36,34 @@ export async function savePageContent(slug: string, title: string, data: any) {
     }
 
     revalidatePath(`/${slug}`);
+    revalidatePath(`/p/${slug}`);
     revalidatePath("/");
     revalidatePath("/admin/content/pages");
+    revalidatePath("/admin/content/announcements");
+    revalidatePath("/admin/content/blog");
+    revalidatePath("/journal");
 
     return { success: true };
   } catch (error: any) {
     console.error("[SAVE_PAGE_ERROR]", error);
     return { success: false, error: error.message };
+  }
+}
+
+export async function deletePage(slug: string) {
+  try {
+    await requireAdminApi();
+
+    await db.delete(sitePages).where(eq(sitePages.slug, slug));
+
+    revalidatePath(`/p/${slug}`);
+    revalidatePath(`/${slug}`);
+    revalidatePath("/");
+    revalidatePath("/admin/content/pages");
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("[DELETE_PAGE_ERROR]", error);
+    return { success: false, error: error.message || "Failed to delete page" };
   }
 }

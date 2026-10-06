@@ -291,6 +291,58 @@ export function getDefaultPageContent(slug: string): any {
     };
   }
 
+  if (slug === 'roastery') {
+    return {
+      eyebrow: "02 / Roastery",
+      headline: "Coffee<br/>For Everyday<br/>Rituals.",
+      description: "Produced in small batches. Designed for consistency, clarity, and daily enjoyment.",
+      collectionBadge: "Collection / 01",
+      collectionTitle: "Daily Series.",
+      collectionDesc: "Everyday blends designed for consistency, versatility, and easy drinking. Built to perform across espresso, americano, and milk-based coffee.",
+      futureSeriesTag: "In Development",
+      futureSeriesTitle: "Future Series",
+      series2Title: "Signature",
+      series2Desc: "Complex single origins.",
+      series3Title: "Specialty",
+      series3Desc: "Microlots & experimentals.",
+      series4Title: "Limited",
+      series4Desc: "Seasonal drops."
+    };
+  }
+
+  if (slug === 'workshops') {
+    return {
+      eyebrow: "03 / Workshops",
+      title: "Workshops.",
+      description: "Gatherings designed around coffee, creativity, and community.",
+      introNote: "Explore our regular calendar of barista training, cupping, and brewing classes held directly at our Cikampek roastery bar."
+    };
+  }
+
+  if (slug === 'contact') {
+    return {
+      eyebrow: "06 / Contact",
+      title: "Get in Touch.",
+      subtitle: "Conversations & Inquiries",
+      description: "Whether you are interested in wholesale coffee beans, space reservations, or just saying hello, we would love to hear from you.",
+      email: "hello@kalana.com",
+      whatsapp: "+62 812-3456-7890",
+      hours: "Daily 08:00 - 22:00 WIB",
+      address: "Jl. Raya Cikampek No. 45, Karawang, Jawa Barat"
+    };
+  }
+
+  if (slug === 'announcement') {
+    return {
+      isEnabled: true,
+      text: "Complimentary shipping across Java on orders over IDR 300,000 | Code: KALANA2026",
+      linkText: "Shop Coffee",
+      linkUrl: "/roastery",
+      bgColor: "#0A0A0A",
+      textColor: "#FFFFFF",
+    };
+  }
+
   return { title: slug.toUpperCase(), content: "" };
 }
 
@@ -305,9 +357,60 @@ export async function getPageContent(slug: string) {
       return { ...getDefaultPageContent(slug), ...parsed, pageTitle: page.title };
     }
   } catch (err) {
-    // If table doesn't exist yet, gracefully use default
     console.warn(`[GET_PAGE_CONTENT_FALLBACK] ${slug}`);
   }
 
   return getDefaultPageContent(slug);
+}
+
+export async function getAnnouncement() {
+  return getPageContent('announcement');
+}
+
+export async function getBlogArticles(): Promise<any[]> {
+  const page = await getPageContent('blog_articles');
+  if (page && Array.isArray(page.articles)) {
+    return page.articles;
+  }
+  return [
+    {
+      id: "art-1",
+      slug: "art-of-slow-roasting",
+      title: "The Art of Slow Roasting",
+      excerpt: "Why gentle thermal transfer creates richer body, distinct sweetness, and enduring cup clarity.",
+      content: "At KALANA, roasting is not about aggressive development or chasing carbonized profiles. It is a contemplative study of moisture loss, airflow, and heat balance. By extending the Maillard phase and maintaining gentle conduction, we allow the innate sweetness of Indonesian origins to caramelize cleanly.",
+      category: "Roastery Craft",
+      coverImage: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=1200&auto=format&fit=crop",
+      author: "Matias Austin",
+      readTime: "4 min read",
+      status: "PUBLISHED",
+      createdAt: "2026-10-01"
+    },
+    {
+      id: "art-2",
+      slug: "brewing-water-chemistry",
+      title: "Water Chemistry for Pour-Over Clarity",
+      excerpt: "Understanding the balance between magnesium, calcium, and bicarbonate for optimum extraction.",
+      content: "Coffee is 98.5% water. When your cup tastes flat or excessively bitter despite dialing in your grind, the culprit is often total dissolved solids (TDS) and buffer capacity. We calibrate our roastery brew bar to 60 ppm general hardness and 25 ppm alkalinity for pristine clarity.",
+      category: "Brewing Guide",
+      coverImage: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=1200&auto=format&fit=crop",
+      author: "KALANA Bar Team",
+      readTime: "5 min read",
+      status: "PUBLISHED",
+      createdAt: "2026-09-24"
+    },
+    {
+      id: "art-3",
+      slug: "architecture-of-stillness",
+      title: "Architecture of Stillness: Designing the Space",
+      excerpt: "How natural timber, brutalist concrete, and acoustic buffering cultivate space for daily pause.",
+      content: "Our space was conceived as an intentional retreat from sensory overload. By utilizing raw volcanic stone, warm teak benches, and oversized panoramic apertures, we invite visitors to slow their pace and reconnect with simple physical rituals.",
+      category: "The Space",
+      coverImage: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=1200&auto=format&fit=crop",
+      author: "Design Studio",
+      readTime: "3 min read",
+      status: "PUBLISHED",
+      createdAt: "2026-09-15"
+    }
+  ];
 }

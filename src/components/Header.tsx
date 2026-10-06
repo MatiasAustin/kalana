@@ -1,11 +1,14 @@
 import HeaderClient from './HeaderClient';
-import { getSiteSettings, getNavigation, getLocation, getSocialLinks } from '@/lib/cms-api';
+import { getSiteSettings, getNavigation, getLocation, getSocialLinks, getAnnouncement } from '@/lib/cms-api';
 
 export default async function Header() {
-  const settings = await getSiteSettings();
-  const navigation = await getNavigation();
-  const location = await getLocation();
-  const socialLinks = await getSocialLinks();
+  const [settings, navigation, location, socialLinks, announcement] = await Promise.all([
+    getSiteSettings(),
+    getNavigation(),
+    getLocation(),
+    getSocialLinks(),
+    getAnnouncement(),
+  ]);
 
   return (
     <HeaderClient 
@@ -14,6 +17,7 @@ export default async function Header() {
       logoUrl={settings.logoUrl}
       location={location}
       socialLinks={socialLinks}
+      announcement={announcement}
     />
   );
 }

@@ -10,6 +10,7 @@ interface ImageUploadFieldProps {
   folder?: string;
   aspectRatio?: "square" | "video" | "portrait" | "auto";
   description?: string;
+  helperText?: string;
   accept?: string;
 }
 
@@ -20,6 +21,7 @@ export function ImageUploadField({
   folder = "cms",
   aspectRatio = "auto",
   description,
+  helperText,
   accept = "image/*"
 }: ImageUploadFieldProps) {
   const [isUploading, setIsUploading] = useState(false);
@@ -92,7 +94,7 @@ export function ImageUploadField({
   return (
     <div className="space-y-2">
       {label && <label className="block text-sm font-medium text-gray-700">{label}</label>}
-      {description && <p className="text-xs text-gray-500">{description}</p>}
+      {(description || helperText) && <p className="text-xs text-gray-500">{description || helperText}</p>}
 
       {error && (
         <div className="text-xs text-red-600 bg-red-50 p-2 rounded border border-red-200">

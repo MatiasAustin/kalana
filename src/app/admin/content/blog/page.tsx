@@ -1,1 +1,10 @@
-export default function PlaceholderPage() { return (<div className="max-w-4xl mx-auto py-12 text-center"><h1 className="text-2xl font-bold text-gray-900 mb-4">Coming Soon</h1><p className="text-gray-500">This feature is currently under development.</p></div>); }
+import { BlogManager } from "@/components/admin/BlogManager";
+import { getBlogArticles } from "@/lib/cms-api";
+
+export const dynamic = "force-dynamic";
+
+export default async function AdminBlogPage() {
+  const articles = await getBlogArticles();
+
+  return <BlogManager initialArticles={articles} />;
+}

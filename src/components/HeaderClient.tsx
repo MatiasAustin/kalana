@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 import { useAuth } from "@clerk/nextjs";
 
-export default function HeaderClient({ navLinks, brandName, logoUrl, location, socialLinks }: any) {
+export default function HeaderClient({ navLinks, brandName, logoUrl, location, socialLinks, announcement }: any) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -26,17 +26,40 @@ export default function HeaderClient({ navLinks, brandName, logoUrl, location, s
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const headerStyles = clsx(
-    "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
-    isScrolled ? "bg-kalana-offwhite/90 backdrop-blur-md py-4 border-b border-kalana-black/10" : "bg-transparent py-8 border-b border-transparent"
-  );
-
   return (
     <>
-      <header className={headerStyles}>
-        <div className="container mx-auto px-6 lg:px-12 flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="z-50 group flex items-center gap-2">
+      <div className="fixed top-0 left-0 right-0 z-50">
+        {announcement?.isEnabled && announcement?.text && (
+          <div
+            style={{
+              backgroundColor: announcement.bgColor || "#0A0A0A",
+              color: announcement.textColor || "#FFFFFF",
+            }}
+            className="w-full text-center py-2 px-4 text-[11px] font-mono tracking-wider flex items-center justify-center gap-2 border-b border-black/10 transition-colors"
+          >
+            <span>{announcement.text}</span>
+            {announcement.linkUrl && (
+              <Link
+                href={announcement.linkUrl}
+                className="underline underline-offset-2 hover:opacity-80 transition-opacity font-bold ml-1 inline-flex items-center gap-0.5"
+              >
+                {announcement.linkText || "Explore"} →
+              </Link>
+            )}
+          </div>
+        )}
+
+        <header
+          className={clsx(
+            "transition-all duration-500",
+            isScrolled
+              ? "bg-kalana-offwhite/90 backdrop-blur-md py-4 border-b border-kalana-black/10"
+              : "bg-transparent py-7 border-b border-transparent"
+          )}
+        >
+          <div className="container mx-auto px-6 lg:px-12 flex items-center justify-between">
+            {/* Logo */}
+            <Link href="/" className="z-50 group flex items-center gap-2">
             {logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={logoUrl} alt={brandName} className="h-6 w-auto object-contain max-h-8" />
@@ -92,6 +115,7 @@ export default function HeaderClient({ navLinks, brandName, logoUrl, location, s
           </div>
         </div>
       </header>
+    </div>
 
       {/* Mobile Menu */}
       <AnimatePresence>
