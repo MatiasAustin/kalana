@@ -196,40 +196,55 @@ export default async function SpacePage() {
       <section className="py-32 px-6 lg:px-12 bg-kalana-black text-kalana-offwhite">
         <div className="container mx-auto grid grid-cols-1 md:grid-cols-12 gap-16 items-center">
           <div className="md:col-span-5 order-2 md:order-1">
-            <h2 className="text-4xl md:text-6xl font-semibold uppercase tracking-tighter mb-16 border-b border-kalana-offwhite/20 pb-8">
+            <span className="text-[10px] tracking-[0.2em] text-kalana-offwhite/50 uppercase mb-4 block font-mono">
+              Sanctuary Anchor / 04
+            </span>
+            <h2 className="text-4xl md:text-6xl font-semibold uppercase tracking-tighter mb-8 border-b border-kalana-offwhite/20 pb-6">
               Visit Us.
             </h2>
 
-            <div className="space-y-16">
+            <div className="space-y-8">
               <div>
-                <h3 className="text-[10px] tracking-[0.2em] text-kalana-offwhite/50 uppercase mb-4 font-mono">
-                  Location
+                <h3 className="text-2xl font-bold uppercase tracking-tight text-kalana-offwhite mb-2">
+                  {location.name || "KALANA Space & Roastery"}
                 </h3>
-                <p className="text-sm tracking-wide leading-relaxed font-light">
+                <p className="text-sm tracking-wide leading-relaxed font-light text-kalana-offwhite/80">
                   {location.address}
                   <br />
-                  {location.city || ""} {location.province || ""}
+                  {location.city ? `${location.city}, ` : ""}{location.province || "West Java"}{location.country ? ` • ${location.country}` : ""}
                 </p>
               </div>
 
               <div>
-                <h3 className="text-[10px] tracking-[0.2em] text-kalana-offwhite/50 uppercase mb-4 font-mono">
-                  Hours
-                </h3>
+                <h4 className="text-[10px] tracking-[0.2em] text-kalana-offwhite/50 uppercase mb-3 font-mono">
+                  Hours & Hospitality
+                </h4>
                 <div className="space-y-2 text-sm tracking-wide font-light">
-                  <div className="flex justify-between max-w-xs border-b border-kalana-offwhite/10 pb-2">
-                    <span>Opening Hours</span>
-                    <span>{location.openingHours || "08:00 — 22:00"}</span>
+                  <div className="flex justify-between max-w-sm border-b border-kalana-offwhite/10 pb-2">
+                    <span className="text-kalana-offwhite/70">Opening Hours</span>
+                    <span className="font-medium text-kalana-offwhite">{location.openingHours || "Daily 08:00 — 22:00 WIB"}</span>
                   </div>
+                  {(location.whatsapp || location.phone) && (
+                    <div className="flex justify-between max-w-sm border-b border-kalana-offwhite/10 pb-2">
+                      <span className="text-kalana-offwhite/70">Reservations</span>
+                      <span className="font-medium text-kalana-offwhite">{location.whatsapp || location.phone}</span>
+                    </div>
+                  )}
+                  {location.email && (
+                    <div className="flex justify-between max-w-sm border-b border-kalana-offwhite/10 pb-2">
+                      <span className="text-kalana-offwhite/70">Inquiries</span>
+                      <span className="font-medium text-kalana-offwhite">{location.email}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div>
+              <div className="pt-2">
                 <a
-                  href={location.googleMapsUrl || "#"}
+                  href={location.googleMapsUrl || "https://maps.google.com/?q=Kalana+Coffee+Cikampek"}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block text-[10px] tracking-[0.2em] uppercase border-b border-kalana-offwhite pb-1 hover:opacity-50 transition-opacity font-mono"
+                  className="inline-block text-xs tracking-[0.2em] uppercase border-b border-kalana-offwhite pb-1 hover:opacity-60 transition-opacity font-mono font-semibold"
                 >
                   Get Directions →
                 </a>
@@ -239,13 +254,12 @@ export default async function SpacePage() {
 
           <div className="md:col-span-7 order-1 md:order-2 h-full min-h-[450px]">
             {location.coverImageUrl ? (
-              <div className="w-full h-full min-h-[450px] relative rounded overflow-hidden border border-kalana-offwhite/20">
-                <Image
+              <div className="w-full h-full min-h-[450px] aspect-[4/3] md:aspect-auto relative rounded overflow-hidden border border-kalana-offwhite/20">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={location.coverImageUrl}
                   alt={location.name || "KALANA Space"}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="w-full h-full object-cover"
                 />
               </div>
             ) : (
@@ -255,7 +269,7 @@ export default async function SpacePage() {
                     {location.name || "KALANA SPACE"}
                   </span>
                   <span className="text-[10px] text-kalana-offwhite/50 tracking-[0.2em] uppercase block font-mono">
-                    {location.address}, {location.province}
+                    {location.address}, {location.city || ""} {location.province}
                   </span>
                 </div>
               </div>
