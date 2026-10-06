@@ -1,1 +1,24 @@
-export default function PlaceholderPage() { return (<div className="max-w-4xl mx-auto py-12 text-center"><h1 className="text-2xl font-bold text-gray-900 mb-4">Coming Soon</h1><p className="text-gray-500">This feature is currently under development.</p></div>); }
+import { db } from "@/lib/db";
+import { orders } from "@/lib/db/schema";
+import { desc, eq } from "drizzle-orm";
+import { DraftOrdersList } from "@/components/admin/DraftOrdersList";
+
+export default async function DraftOrdersPage() {
+  const draftOrders = await db.query.orders.findMany({
+    where: eq(orders.status, "DRAFT"),
+    with: {
+      customer: true,
+      items: true,
+    },
+    orderBy: [desc(orders.createdAt)],
+  }).catch((err) => {
+    console.error("Failed to load draft orders:", err);
+    return [];
+  });
+
+  return (
+    <div className="max-w-7xl mx-auto">
+      <DraftOrdersList initialOrders={draftOrders as any} />
+    </div>
+  );
+}
