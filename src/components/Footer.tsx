@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getSiteSettings, getNavigation, getSocialLinks, getLocation } from "@/lib/cms-api";
 
+export const dynamic = "force-dynamic";
+
 export default async function Footer() {
   const settings = await getSiteSettings();
   const navigation = await getNavigation();
@@ -20,7 +22,20 @@ export default async function Footer() {
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-32">
           <div className="md:col-span-6 lg:col-span-5">
-            <h2 className="text-[10vw] sm:text-[8vw] md:text-7xl lg:text-9xl font-semibold tracking-tighter leading-none mb-6">{settings.brandName.toLowerCase()}.</h2>
+            {settings.logoUrl ? (
+              <div className="mb-8">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  src={settings.logoUrl} 
+                  alt={settings.brandName || "KALANA"} 
+                  className="h-14 sm:h-20 w-auto object-contain max-w-[280px]"
+                />
+              </div>
+            ) : (
+              <h2 className="text-[10vw] sm:text-[8vw] md:text-7xl lg:text-9xl font-semibold tracking-tighter leading-none mb-6">
+                {settings.brandName ? settings.brandName.toLowerCase() : "kalana"}.
+              </h2>
+            )}
             <div className="flex gap-4 items-center">
               <span className="w-8 h-[1px] bg-kalana-black"></span>
               <p className="text-xs tracking-[0.2em] uppercase text-kalana-black/70">

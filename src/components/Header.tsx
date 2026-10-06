@@ -1,6 +1,8 @@
 import HeaderClient from './HeaderClient';
 import { getSiteSettings, getNavigation, getLocation, getSocialLinks, getAnnouncement } from '@/lib/cms-api';
 
+export const dynamic = "force-dynamic";
+
 export default async function Header() {
   const [settings, navigation, location, socialLinks, announcement] = await Promise.all([
     getSiteSettings(),

@@ -62,7 +62,7 @@ export default function HeaderClient({ navLinks, brandName, logoUrl, location, s
             <Link href="/" className="z-50 group flex items-center gap-2">
             {logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoUrl} alt={brandName} className="h-6 w-auto object-contain max-h-8" />
+              <img src={logoUrl} alt={brandName || "KALANA"} className="h-7 sm:h-8 w-auto object-contain max-h-9" />
             ) : (
               <span className="text-sm font-bold tracking-[0.2em] uppercase text-kalana-black group-hover:opacity-70 transition-opacity">
                 {brandName}

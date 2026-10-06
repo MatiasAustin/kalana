@@ -7,7 +7,9 @@
     "whatsapp": "+62 811 1234 567",
     "country": "Indonesia",
     "currency": "IDR",
-    "timezone": "Asia/Jakarta"
+    "timezone": "Asia/Jakarta",
+    "logoUrl": "https://pub-8f312cdd46f04b2bb59eca53807bddfc.r2.dev/kalana/branding/cc82804a-d690-4d95-807b-45d87d02ce69.png",
+    "faviconUrl": "https://pub-8f312cdd46f04b2bb59eca53807bddfc.r2.dev/kalana/branding/785cdee7-af52-4902-b6a3-dde9904a2421.png"
   },
   "navigation": {
     "header": [

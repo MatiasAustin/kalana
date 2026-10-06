@@ -27,7 +27,8 @@ export async function updateSiteSettings(data: any) {
       });
     }
 
-    revalidatePath("/");
+    revalidatePath("/", "layout");
+    revalidatePath("/admin/settings/store");
     revalidatePath("/admin/settings");
     return { success: true };
   } catch (error: any) {

@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { siteSettings, locations, socialLinks } from "@/lib/db/schema";
 import { eq, asc } from "drizzle-orm";
 
+export const dynamic = "force-dynamic";
+
 export default async function StoreSettingsPage() {
   const settings = await db.query.siteSettings.findFirst({
     where: eq(siteSettings.id, 'global')
