@@ -53,12 +53,12 @@ export default async function SpacePage() {
 
           <div className="lg:col-span-7">
             <div className="w-full aspect-[4/3] bg-kalana-black/5 border border-kalana-black/10 relative overflow-hidden">
-              {page.heroImage ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={page.heroImage} alt={page.headline || "Space Hero"} className="w-full h-full object-cover" />
-              ) : (
-                <div className="absolute inset-0 bg-kalana-black mix-blend-multiply opacity-5"></div>
-              )}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={page.heroImage || "https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=1600&auto=format&fit=crop"}
+                alt={page.headline || "Space Hero"}
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </div>
@@ -82,16 +82,20 @@ export default async function SpacePage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               <div className="aspect-[3/4] bg-kalana-black/5 border border-kalana-black/10 overflow-hidden relative">
-                {page.atmosphereImage1 ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={page.atmosphereImage1} alt="Atmosphere" className="w-full h-full object-cover" />
-                ) : null}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={page.atmosphereImage1 || "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=1200&auto=format&fit=crop"}
+                  alt="Atmosphere"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div className="aspect-[3/4] bg-kalana-black/5 border border-kalana-black/10 sm:mt-16 overflow-hidden relative">
-                {page.atmosphereImage2 ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={page.atmosphereImage2} alt="Atmosphere detail" className="w-full h-full object-cover" />
-                ) : null}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={page.atmosphereImage2 || "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=1200&auto=format&fit=crop"}
+                  alt="Atmosphere detail"
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
           </div>
@@ -106,10 +110,12 @@ export default async function SpacePage() {
 
         <div className="container mx-auto">
           <div className="w-full aspect-[21/9] bg-kalana-black/5 border border-kalana-black/10 mb-16 relative overflow-hidden">
-            {page.coffeeBarImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={page.coffeeBarImage} alt="Coffee Bar" className="w-full h-full object-cover" />
-            ) : null}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={page.coffeeBarImage || "https://images.unsplash.com/photo-1442512595331-e89e73853f31?q=80&w=1600&auto=format&fit=crop"}
+              alt="Coffee Bar"
+              className="w-full h-full object-cover"
+            />
           </div>
 
           <div className="max-w-2xl mx-auto text-center">

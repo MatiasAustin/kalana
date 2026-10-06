@@ -589,6 +589,72 @@ export function PagesEditor({ initialPagesData, customPages: initialCustom = [] 
                       className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-black outline-none font-sans"
                     />
                   </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <ImageUploadField
+                      label="Atmosphere Photo 1 (Left / Vertical)"
+                      value={currentPage.atmosphereImage1 || ""}
+                      onChange={(url) => handleUpdateField("atmosphereImage1", url)}
+                      aspectRatio="portrait"
+                      helperText="Vertical architectural photo (3:4 ratio)"
+                    />
+                    <ImageUploadField
+                      label="Atmosphere Photo 2 (Right / Offset)"
+                      value={currentPage.atmosphereImage2 || ""}
+                      onChange={(url) => handleUpdateField("atmosphereImage2", url)}
+                      aspectRatio="portrait"
+                      helperText="Vertical sanctuary detail photo (3:4 ratio)"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-gray-200 space-y-4">
+                  <h3 className="font-bold text-gray-900 uppercase">Coffee Bar Section</h3>
+                  <div>
+                    <label className="block font-semibold text-gray-700 uppercase mb-1">Coffee Bar Headline</label>
+                    <input
+                      type="text"
+                      value={currentPage.coffeeBarTitle || ""}
+                      onChange={(e) => handleUpdateField("coffeeBarTitle", e.target.value)}
+                      placeholder="The Coffee Bar"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-black outline-none font-mono"
+                    />
+                  </div>
+
+                  <ImageUploadField
+                    label="Coffee Bar Panorama Photography"
+                    value={currentPage.coffeeBarImage || ""}
+                    onChange={(url) => handleUpdateField("coffeeBarImage", url)}
+                    aspectRatio="video"
+                    helperText="Wide cinematic panoramic photo of the brew bar & espresso machine (21:9 or 16:9 ratio)"
+                  />
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 uppercase mb-1">Coffee Bar Philosophy & Description</label>
+                    <textarea
+                      rows={3}
+                      value={currentPage.coffeeBarDesc || ""}
+                      onChange={(e) => handleUpdateField("coffeeBarDesc", e.target.value)}
+                      placeholder="Our bar is calibrated daily. Featuring our seasonal blends, single-origin offerings, and manual brewing station."
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-black outline-none font-sans"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-gray-200">
+                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between text-xs text-gray-600">
+                    <div>
+                      <span className="font-semibold text-gray-800">Visit Us & Location Section</span>
+                      <p className="text-gray-500 mt-0.5">Address, opening hours, and physical space cover photo are synced with primary location.</p>
+                    </div>
+                    <a
+                      href="/admin/space/location"
+                      target="_blank"
+                      className="font-medium text-black underline hover:text-gray-700 ml-4 shrink-0"
+                    >
+                      Edit Location →
+                    </a>
+                  </div>
                 </div>
               </div>
             )}

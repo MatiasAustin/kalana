@@ -246,14 +246,14 @@ export function getDefaultPageContent(slug: string): any {
       headline: "Come<br/>Wander<br/>In.",
       description: "Coffee, conversations, workshops, and somewhere to stay awhile.",
       locationTag: "Cikampek, West Java",
-      heroImage: "",
+      heroImage: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=1600&auto=format&fit=crop",
       atmosphereTitle: "Sanctuary<br/>From the Noise.",
       atmosphereDesc: "Designed as a sanctuary from the noise. Our space uses natural light, warm materials, and generous spacing to create an environment where you can focus, connect, or simply do nothing at all.",
-      atmosphereImage1: "",
-      atmosphereImage2: "",
+      atmosphereImage1: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=1200&auto=format&fit=crop",
+      atmosphereImage2: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=1200&auto=format&fit=crop",
       coffeeBarTitle: "The Coffee Bar",
       coffeeBarDesc: "Our bar is calibrated daily. Featuring our seasonal blends, single-origin offerings, and manual brewing station.",
-      coffeeBarImage: ""
+      coffeeBarImage: "https://images.unsplash.com/photo-1442512595331-e89e73853f31?q=80&w=1600&auto=format&fit=crop"
     };
   }
 
