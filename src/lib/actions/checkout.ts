@@ -6,7 +6,11 @@ import { eq, inArray } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import { auth } from "@clerk/nextjs/server";
 
-export async function processCheckout(formData: any, cartItems: any[]) {
+export async function processCheckout(
+  formData: any,
+  cartItems: any[],
+  appliedDiscount?: { code: string; amount: number } | null
+) {
   try {
     if (!cartItems || cartItems.length === 0) {
       throw new Error("Cart is empty");
@@ -50,9 +54,10 @@ export async function processCheckout(formData: any, cartItems: any[]) {
       };
     });
 
-    // Dummy shipping calculation
-    const shippingCost = 25000;
-    const total = subtotal + shippingCost;
+    // Shipping & discount calculation
+    const shippingCost = appliedDiscount && appliedDiscount.code === "FREESHIP" ? 0 : 25000;
+    const discountValue = appliedDiscount ? Number(appliedDiscount.amount || 0) : 0;
+    const total = Math.max(0, subtotal + shippingCost - (appliedDiscount?.code === "FREESHIP" ? 0 : discountValue));
 
     // 3. Find or Create Customer
     let customerId = null;
@@ -123,7 +128,7 @@ export async function processCheckout(formData: any, cartItems: any[]) {
       fulfillmentStatus: 'UNFULFILLED',
       subtotal,
       shippingCost,
-      discount: 0,
+      discount: discountValue,
       total,
       currency: 'IDR',
       shippingAddressId: addressId,

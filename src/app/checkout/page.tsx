@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { useCartStore } from "@/store/cartStore";
 import { processCheckout } from "@/lib/actions/checkout";
+import { validateDiscountCode } from "@/lib/actions/marketing";
 
 export default function CheckoutPage() {
   const { isSignedIn, isLoaded } = useAuth();
@@ -27,9 +28,39 @@ export default function CheckoutPage() {
     country: "Indonesia",
   });
 
+  // Discount code state
+  const [discountCodeInput, setDiscountCodeInput] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; amount: number; description?: string } | null>(null);
+  const [isValidatingCode, setIsValidatingCode] = useState(false);
+  const [discountError, setDiscountError] = useState<string | null>(null);
+
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shipping = 25000;
-  const total = subtotal + shipping;
+  const shippingCost = appliedDiscount && appliedDiscount.code === "FREESHIP" ? 0 : 25000;
+  const discountValue = appliedDiscount ? appliedDiscount.amount : 0;
+  const total = Math.max(0, subtotal + shippingCost - (appliedDiscount?.code === "FREESHIP" ? 0 : discountValue));
+
+  const handleApplyDiscount = async () => {
+    if (!discountCodeInput.trim()) return;
+    setIsValidatingCode(true);
+    setDiscountError(null);
+    try {
+      const res = await validateDiscountCode(discountCodeInput, subtotal);
+      if (res.valid && res.discount) {
+        setAppliedDiscount({
+          code: res.discount.code,
+          amount: res.discountAmount || 0,
+          description: res.discount.description,
+        });
+        setDiscountCodeInput("");
+      } else {
+        setDiscountError(res.error || "Invalid discount code");
+      }
+    } catch {
+      setDiscountError("Failed to apply discount code");
+    } finally {
+      setIsValidatingCode(false);
+    }
+  };
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +68,7 @@ export default function CheckoutPage() {
     
     setIsSubmitting(true);
     try {
-      const res = await processCheckout(formData, items);
+      const res = await processCheckout(formData, items, appliedDiscount);
       if (res.success) {
         clearCart();
         if (res.paymentUrl) {
@@ -222,6 +253,52 @@ export default function CheckoutPage() {
             ))}
           </div>
 
+          {/* Discount Code Input Box */}
+          <div className="mb-8 pt-4 border-t border-kalana-black/10">
+            {appliedDiscount ? (
+              <div className="flex items-center justify-between p-3 bg-white border border-kalana-black/20 rounded-sm">
+                <div>
+                  <span className="font-mono text-xs font-bold uppercase">{appliedDiscount.code}</span>
+                  <span className="block text-[10px] text-kalana-black/60 font-mono">
+                    {appliedDiscount.code === "FREESHIP"
+                      ? "Free Shipping Applied"
+                      : `- IDR ${appliedDiscount.amount.toLocaleString("id-ID")}`}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAppliedDiscount(null)}
+                  className="text-[10px] font-mono text-red-600 hover:text-red-800 uppercase tracking-wider font-semibold"
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="DISCOUNT CODE"
+                    value={discountCodeInput}
+                    onChange={(e) => setDiscountCodeInput(e.target.value.toUpperCase())}
+                    className="flex-1 bg-white border border-kalana-black/20 px-3 py-2 text-xs font-mono tracking-wider uppercase focus:outline-none focus:border-kalana-black placeholder:text-kalana-black/30"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyDiscount}
+                    disabled={isValidatingCode || !discountCodeInput.trim()}
+                    className="px-4 py-2 bg-kalana-black text-white text-[10px] font-mono tracking-widest uppercase hover:bg-kalana-black/80 disabled:opacity-50"
+                  >
+                    {isValidatingCode ? "..." : "Apply"}
+                  </button>
+                </div>
+                {discountError && (
+                  <p className="text-[10px] text-red-600 font-mono tracking-wider">{discountError}</p>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="space-y-4 border-y border-kalana-black/20 py-8 mb-8 text-[10px] tracking-[0.2em] uppercase text-kalana-black/70">
             <div className="flex justify-between items-center">
               <span>Subtotal</span>
@@ -229,8 +306,16 @@ export default function CheckoutPage() {
             </div>
             <div className="flex justify-between items-center">
               <span>Shipping</span>
-              <span className="text-sm font-medium tracking-wide text-kalana-black">IDR {shipping.toLocaleString('id-ID')}</span>
+              <span className="text-sm font-medium tracking-wide text-kalana-black">
+                {shippingCost === 0 ? "FREE" : `IDR ${shippingCost.toLocaleString('id-ID')}`}
+              </span>
             </div>
+            {discountValue > 0 && (
+              <div className="flex justify-between items-center text-emerald-700">
+                <span>Discount ({appliedDiscount?.code})</span>
+                <span className="text-sm font-medium tracking-wide">- IDR {discountValue.toLocaleString('id-ID')}</span>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-between items-center">

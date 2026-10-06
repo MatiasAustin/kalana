@@ -1,1 +1,9 @@
-export default function PlaceholderPage() { return (<div className="max-w-4xl mx-auto py-12 text-center"><h1 className="text-2xl font-bold text-gray-900 mb-4">Coming Soon</h1><p className="text-gray-500">This feature is currently under development.</p></div>); }
+import { EmailCaptureManager } from "@/components/admin/EmailCaptureManager";
+import { getSubscribers } from "@/lib/actions/marketing";
+
+export const dynamic = "force-dynamic";
+
+export default async function AdminEmailCapturePage() {
+  const subscribers = await getSubscribers();
+  return <EmailCaptureManager initialSubscribers={subscribers} />;
+}

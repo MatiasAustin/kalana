@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getHomepage, getLocation } from "@/lib/cms-api";
+import { NewsletterForm } from "@/components/NewsletterForm";
 import { db } from "@/lib/db";
 import { products, productVariants, productMedia, events } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
@@ -276,17 +277,10 @@ export default async function Home() {
         <h2 className="text-3xl md:text-5xl font-semibold tracking-tighter uppercase mb-6">{homepage.newsletter.title}</h2>
         <p className="text-xs tracking-wide text-kalana-black/60 mb-12 max-w-sm">{homepage.newsletter.description}</p>
         
-        <form className="flex w-full max-w-md border-b border-kalana-black pb-2">
-          <input 
-            type="email" 
-            placeholder={homepage.newsletter.placeholder} 
-            className="flex-1 bg-transparent text-xs tracking-widest text-kalana-black placeholder:text-kalana-black/30 focus:outline-none uppercase"
-            required
-          />
-          <button type="submit" className="text-[10px] font-semibold tracking-[0.2em] uppercase hover:opacity-50 transition-opacity pl-4">
-            {homepage.newsletter.ctaLabel}
-          </button>
-        </form>
+        <NewsletterForm
+          placeholder={homepage.newsletter.placeholder}
+          ctaLabel={homepage.newsletter.ctaLabel}
+        />
       </section>
     </div>
   );
