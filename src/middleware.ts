@@ -1,25 +1,31 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
 
 const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 const isAdminApiRoute = createRouteMatcher(['/api/admin(.*)']);
-// Exclude the admin login route from protection
-const isAdminLoginRoute = createRouteMatcher(['/auth/admin-login(.*)']);
 
 export default clerkMiddleware(async (auth, req) => {
-  if (isAdminLoginRoute(req)) {
-    return;
-  }
-
-  if (isAdminRoute(req) || isAdminApiRoute(req)) {
-    const authObj = await auth();
-    
-    if (!authObj.userId) {
-      if (isAdminApiRoute(req)) {
-        return new Response('Unauthorized', { status: 401 });
+  try {
+    if (isAdminRoute(req) || isAdminApiRoute(req)) {
+      const { userId } = await auth();
+      
+      if (!userId) {
+        if (isAdminApiRoute(req)) {
+          return new NextResponse('Unauthorized', { status: 401 });
+        }
+        
+        // Clean redirect to login page with return URL
+        const loginUrl = new URL('/login', req.url);
+        loginUrl.searchParams.set('redirect_url', req.nextUrl.pathname || '/admin');
+        return NextResponse.redirect(loginUrl);
       }
-      // Redirect to login page
-      const url = new URL('/login?redirect_url=/admin', req.url);
-      return Response.redirect(url);
+    }
+  } catch (error) {
+    console.error('Middleware auth check error:', error);
+    if (isAdminRoute(req)) {
+      const loginUrl = new URL('/login', req.url);
+      loginUrl.searchParams.set('redirect_url', '/admin');
+      return NextResponse.redirect(loginUrl);
     }
   }
 });

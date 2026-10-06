@@ -15,6 +15,9 @@ export default async function ProductsPage() {
       }
     },
     orderBy: [desc(products.createdAt)],
+  }).catch((err) => {
+    console.error('Failed to load products:', err);
+    return [];
   });
 
   return (

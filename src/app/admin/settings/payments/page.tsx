@@ -8,7 +8,7 @@ import { ArrowLeft } from "lucide-react";
 export default async function PaymentSettingsPage() {
   const settings = await db.query.siteSettings.findFirst({
     where: eq(siteSettings.id, 'global')
-  });
+  }).catch(() => null);
 
   const initialData = {
     activePaymentGateway: settings?.activePaymentGateway || 'NONE',

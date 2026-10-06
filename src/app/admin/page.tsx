@@ -7,10 +7,19 @@ import { desc, sum, count, eq } from 'drizzle-orm';
 export default async function AdminOverview() {
   const allOrders = await db.query.orders.findMany({
     orderBy: [desc(orders.createdAt)],
+  }).catch((err) => {
+    console.error('Failed to load orders for overview:', err);
+    return [];
   });
 
-  const allProducts = await db.query.products.findMany();
-  const allCustomers = await db.query.customers.findMany();
+  const allProducts = await db.query.products.findMany().catch((err) => {
+    console.error('Failed to load products for overview:', err);
+    return [];
+  });
+  const allCustomers = await db.query.customers.findMany().catch((err) => {
+    console.error('Failed to load customers for overview:', err);
+    return [];
+  });
 
   // Basic Stats
   const totalSales = allOrders.reduce((sum, order) => sum + (order.total || 0), 0);

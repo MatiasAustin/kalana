@@ -10,6 +10,9 @@ export default async function CustomersPage() {
       orders: true
     },
     orderBy: [desc(customers.createdAt)],
+  }).catch((err) => {
+    console.error('Failed to load customers:', err);
+    return [];
   });
 
   return (
