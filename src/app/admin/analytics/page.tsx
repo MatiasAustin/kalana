@@ -1,1 +1,18 @@
-export default function PlaceholderPage() { return (<div className="max-w-4xl mx-auto py-12 text-center"><h1 className="text-2xl font-bold text-gray-900 mb-4">Coming Soon</h1><p className="text-gray-500">This feature is currently under development.</p></div>); }
+import { getAnalyticsData } from "@/lib/actions/analytics";
+import { AnalyticsDashboard } from "@/components/admin/AnalyticsDashboard";
+
+export const dynamic = "force-dynamic";
+
+export const metadata = {
+  title: "Analytics & Telemetry — KALANA Admin",
+};
+
+export default async function AnalyticsPage() {
+  const initialData = await getAnalyticsData("30d");
+
+  return (
+    <div className="max-w-7xl mx-auto pb-12">
+      <AnalyticsDashboard initialData={initialData} />
+    </div>
+  );
+}

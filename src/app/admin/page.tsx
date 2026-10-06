@@ -33,11 +33,15 @@ export default async function AdminOverview() {
     <div className="max-w-6xl mx-auto space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Overview</h1>
-        <select className="border border-gray-300 rounded-md text-sm py-2 px-3 bg-white focus:outline-none focus:ring-1 focus:ring-black">
-          <option>All Time</option>
-          <option>Today</option>
-          <option>This Month</option>
-        </select>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/admin/analytics"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black text-white text-xs font-medium rounded-md hover:bg-gray-800 transition-colors shadow-sm"
+          >
+            Full Analytics & Telemetry
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
       </div>
 
       {/* KPI Cards */}
