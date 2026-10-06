@@ -3,6 +3,7 @@ import path from 'path';
 import { db } from '@/lib/db';
 import { siteSettings, products, locations, socialLinks, homepageSections, sitePages } from '@/lib/db/schema';
 import { eq, asc } from 'drizzle-orm';
+import { normalizeDeep } from '@/lib/image-util';
 
 export async function getCmsData() {
   const filePath = path.join(process.cwd(), 'src', 'lib', 'cms-data.json');
@@ -18,13 +19,13 @@ export async function getSiteSettings() {
     
     if (!settings) {
       const data = await getCmsData();
-      return data.siteSettings;
+      return normalizeDeep(data.siteSettings);
     }
-    return settings;
+    return normalizeDeep(settings);
   } catch (err) {
     console.error("[GET_SITE_SETTINGS_ERROR]", err);
     const data = await getCmsData();
-    return data.siteSettings;
+    return normalizeDeep(data.siteSettings);
   }
 }
 
@@ -143,16 +144,16 @@ export async function getHomepage() {
       }
     });
 
-    return formatted;
+    return normalizeDeep(formatted);
   } catch (err) {
     console.error("[GET_HOMEPAGE_ERROR]", err);
-    return defaultHomepage;
+    return normalizeDeep(defaultHomepage);
   }
 }
 
 export async function getProducts() {
   const data = await getCmsData();
-  return data.products;
+  return normalizeDeep(data.products);
 }
 
 export async function getProductByHandle(handle: string) {
@@ -174,7 +175,7 @@ export async function getProductByHandle(handle: string) {
     }
   }
 
-  return product;
+  return normalizeDeep(product);
 }
 
 export async function getSocialLinks() {
@@ -207,12 +208,12 @@ export async function getLocation() {
 
     if (!location) {
       const data = await getCmsData();
-      return data.location;
+      return normalizeDeep(data.location);
     }
-    return location;
+    return normalizeDeep(location);
   } catch {
     const data = await getCmsData();
-    return data.location;
+    return normalizeDeep(data.location);
   }
 }
 
@@ -379,13 +380,13 @@ export async function getPageContent(slug: string) {
 
     if (page && page.data) {
       const parsed = typeof page.data === 'string' ? JSON.parse(page.data) : page.data;
-      return { ...getDefaultPageContent(slug), ...parsed, pageTitle: page.title };
+      return normalizeDeep({ ...getDefaultPageContent(slug), ...parsed, pageTitle: page.title });
     }
   } catch (err) {
     console.warn(`[GET_PAGE_CONTENT_FALLBACK] ${slug}`);
   }
 
-  return getDefaultPageContent(slug);
+  return normalizeDeep(getDefaultPageContent(slug));
 }
 
 export async function getAnnouncement() {
@@ -395,9 +396,9 @@ export async function getAnnouncement() {
 export async function getBlogArticles(): Promise<any[]> {
   const page = await getPageContent('blog_articles');
   if (page && Array.isArray(page.articles)) {
-    return page.articles;
+    return normalizeDeep(page.articles);
   }
-  return [
+  return normalizeDeep([
     {
       id: "art-1",
       slug: "art-of-slow-roasting",
@@ -414,7 +415,7 @@ export async function getBlogArticles(): Promise<any[]> {
     {
       id: "art-2",
       slug: "brewing-water-chemistry",
-      title: "Water Chemistry for Pour-Over Clarity",
+      title: "Water Chemistry for Pour-Over clarity",
       excerpt: "Understanding the balance between magnesium, calcium, and bicarbonate for optimum extraction.",
       content: "Coffee is 98.5% water. When your cup tastes flat or excessively bitter despite dialing in your grind, the culprit is often total dissolved solids (TDS) and buffer capacity. We calibrate our roastery brew bar to 60 ppm general hardness and 25 ppm alkalinity for pristine clarity.",
       category: "Brewing Guide",
@@ -437,5 +438,5 @@ export async function getBlogArticles(): Promise<any[]> {
       status: "PUBLISHED",
       createdAt: "2026-09-15"
     }
-  ];
+  ]);
 }

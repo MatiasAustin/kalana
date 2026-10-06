@@ -26,7 +26,7 @@ export async function generateUploadUrl(filename: string, contentType: string, f
   });
 
   const uploadUrl = await getSignedUrl(r2Client, command, { expiresIn: 3600 });
-  const publicUrl = `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/${key}`;
+  const publicUrl = `/api/media/${key}`;
 
   return { uploadUrl, key, publicUrl };
 }

@@ -1,5 +1,6 @@
 import HeaderClient from './HeaderClient';
 import { getSiteSettings, getNavigation, getLocation, getSocialLinks, getAnnouncement } from '@/lib/cms-api';
+import { normalizeImageUrl } from '@/lib/image-util';
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ export default async function Header() {
     <HeaderClient 
       navLinks={navigation.header}
       brandName={settings.brandName}
-      logoUrl={settings.logoUrl}
+      logoUrl={normalizeImageUrl(settings.logoUrl)}
       location={location}
       socialLinks={socialLinks}
       announcement={announcement}

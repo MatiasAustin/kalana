@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getSiteSettings, getNavigation, getSocialLinks, getLocation } from "@/lib/cms-api";
+import { normalizeImageUrl } from "@/lib/image-util";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,7 @@ export default async function Footer() {
               <div className="mb-8">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
-                  src={settings.logoUrl} 
+                  src={normalizeImageUrl(settings.logoUrl)} 
                   alt={settings.brandName || "KALANA"} 
                   className="h-14 sm:h-20 w-auto object-contain max-w-[280px]"
                 />

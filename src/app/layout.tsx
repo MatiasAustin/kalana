@@ -12,11 +12,13 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const dynamic = "force-dynamic";
 
+import { normalizeImageUrl } from "@/lib/image-util";
+
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
   const brandName = settings?.brandName || "KALANA";
   const tagline = settings?.tagline || "Space. Coffee. Further Days.";
-  const favicon = settings?.faviconUrl || "https://pub-8f312cdd46f04b2bb59eca53807bddfc.r2.dev/kalana/branding/785cdee7-af52-4902-b6a3-dde9904a2421.png";
+  const favicon = normalizeImageUrl(settings?.faviconUrl) || "/api/media/kalana/branding/785cdee7-af52-4902-b6a3-dde9904a2421.png";
 
   return {
     title: `${brandName} | ${tagline}`,
@@ -41,7 +43,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const settings = await getSiteSettings();
-  const favicon = settings?.faviconUrl || "https://pub-8f312cdd46f04b2bb59eca53807bddfc.r2.dev/kalana/branding/785cdee7-af52-4902-b6a3-dde9904a2421.png";
+  const favicon = normalizeImageUrl(settings?.faviconUrl) || "/api/media/kalana/branding/785cdee7-af52-4902-b6a3-dde9904a2421.png";
 
   return (
     <ClerkProvider>
