@@ -309,6 +309,10 @@ export const productVariantsRelations = relations(productVariants, ({ one }) => 
     fields: [productVariants.productId],
     references: [products.id],
   }),
+  inventory: one(inventory, {
+    fields: [productVariants.id],
+    references: [inventory.variantId],
+  }),
 }));
 
 export const productMediaRelations = relations(productMedia, ({ one }) => ({
@@ -374,4 +378,23 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
 export const customersRelations = relations(customers, ({ many }) => ({
   orders: many(orders),
 }));
+
+export const reviewsRelations = relations(reviews, ({ one }) => ({
+  product: one(products, {
+    fields: [reviews.productId],
+    references: [products.id],
+  }),
+  customer: one(customers, {
+    fields: [reviews.customerId],
+    references: [customers.id],
+  }),
+}));
+
+export const inventoryRelations = relations(inventory, ({ one }) => ({
+  variant: one(productVariants, {
+    fields: [inventory.variantId],
+    references: [productVariants.id],
+  }),
+}));
+
 

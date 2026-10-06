@@ -1,1 +1,27 @@
-export default function PlaceholderPage() { return (<div className="max-w-4xl mx-auto py-12 text-center"><h1 className="text-2xl font-bold text-gray-900 mb-4">Coming Soon</h1><p className="text-gray-500">This feature is currently under development.</p></div>); }
+import { db } from "@/lib/db";
+import { reviews, products } from "@/lib/db/schema";
+import { desc, asc } from "drizzle-orm";
+import { ReviewsManager } from "@/components/admin/ReviewsManager";
+
+export default async function ProductReviewsPage() {
+  const [allReviews, allProducts] = await Promise.all([
+    db.query.reviews.findMany({
+      with: {
+        product: true,
+      },
+      orderBy: [desc(reviews.createdAt)],
+    }).catch(() => []),
+    db.query.products.findMany({
+      orderBy: [asc(products.name)],
+    }).catch(() => []),
+  ]);
+
+  return (
+    <div className="max-w-7xl mx-auto">
+      <ReviewsManager 
+        initialReviews={allReviews as any} 
+        allProducts={allProducts as any} 
+      />
+    </div>
+  );
+}

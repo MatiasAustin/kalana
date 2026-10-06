@@ -168,3 +168,122 @@ export async function updateProduct(id: string, data: CreateProductInput) {
     return { success: false, error: error.message || "Failed to update product" };
   }
 }
+
+export async function updateProductStatus(id: string, status: "DRAFT" | "ACTIVE" | "ARCHIVED") {
+  try {
+    await requireAdminApi();
+
+    await db.update(products).set({ status }).where(eq(products.id, id));
+
+    revalidatePath("/admin/products");
+    revalidatePath("/roastery");
+    revalidatePath("/");
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("[UPDATE_PRODUCT_STATUS_ERROR]", error);
+    return { success: false, error: error.message || "Failed to update status" };
+  }
+}
+
+export async function bulkUpdateProductStatus(ids: string[], status: "DRAFT" | "ACTIVE" | "ARCHIVED") {
+  try {
+    await requireAdminApi();
+
+    for (const id of ids) {
+      await db.update(products).set({ status }).where(eq(products.id, id));
+    }
+
+    revalidatePath("/admin/products");
+    revalidatePath("/roastery");
+    revalidatePath("/");
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("[BULK_UPDATE_PRODUCT_STATUS_ERROR]", error);
+    return { success: false, error: error.message || "Failed to bulk update status" };
+  }
+}
+
+export async function bulkDeleteProducts(ids: string[]) {
+  try {
+    await requireAdminApi();
+
+    for (const id of ids) {
+      await db.delete(productVariants).where(eq(productVariants.productId, id));
+      await db.delete(productMedia).where(eq(productMedia.productId, id));
+      await db.delete(products).where(eq(products.id, id));
+    }
+
+    revalidatePath("/admin/products");
+    revalidatePath("/roastery");
+    revalidatePath("/");
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("[BULK_DELETE_PRODUCTS_ERROR]", error);
+    return { success: false, error: "Failed to delete selected products." };
+  }
+}
+
+export async function duplicateProduct(id: string) {
+  try {
+    await requireAdminApi();
+
+    const original = await db.query.products.findFirst({
+      where: eq(products.id, id),
+      with: {
+        variants: true,
+        media: true,
+      },
+    });
+
+    if (!original) throw new Error("Product not found");
+
+    const newProductId = uuidv4();
+    const newSlug = `${original.slug}-copy-${Date.now().toString().slice(-4)}`;
+    const newName = `${original.name} (Copy)`;
+
+    await db.insert(products).values({
+      id: newProductId,
+      name: newName,
+      slug: newSlug,
+      description: original.description,
+      blend: original.blend,
+      roast: original.roast,
+      tastingNotes: original.tastingNotes,
+      status: "DRAFT",
+    });
+
+    if (original.variants && original.variants.length > 0) {
+      const copyVariants = original.variants.map((v) => ({
+        id: uuidv4(),
+        productId: newProductId,
+        name: v.name,
+        sku: v.sku ? `${v.sku}-COPY` : null,
+        price: v.price,
+        weight: v.weight,
+        status: v.status,
+      }));
+      await db.insert(productVariants).values(copyVariants);
+    }
+
+    if (original.media && original.media.length > 0) {
+      const copyMedia = original.media.map((pm, idx) => ({
+        id: uuidv4(),
+        productId: newProductId,
+        mediaId: pm.mediaId,
+        sortOrder: idx,
+        isPrimary: idx === 0,
+      }));
+      await db.insert(productMedia).values(copyMedia);
+    }
+
+    revalidatePath("/admin/products");
+
+    return { success: true, newId: newProductId };
+  } catch (error: any) {
+    console.error("[DUPLICATE_PRODUCT_ERROR]", error);
+    return { success: false, error: error.message || "Failed to duplicate product" };
+  }
+}

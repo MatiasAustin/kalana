@@ -1,1 +1,21 @@
-export default function PlaceholderPage() { return (<div className="max-w-4xl mx-auto py-12 text-center"><h1 className="text-2xl font-bold text-gray-900 mb-4">Coming Soon</h1><p className="text-gray-500">This feature is currently under development.</p></div>); }
+import { db } from "@/lib/db";
+import { productVariants } from "@/lib/db/schema";
+import { InventoryManager } from "@/components/admin/InventoryManager";
+
+export default async function InventoryPage() {
+  const allVariants = await db.query.productVariants.findMany({
+    with: {
+      product: true,
+      inventory: true,
+    },
+  }).catch((err) => {
+    console.error("Failed to load inventory:", err);
+    return [];
+  });
+
+  return (
+    <div className="max-w-7xl mx-auto">
+      <InventoryManager initialVariants={allVariants as any} />
+    </div>
+  );
+}
