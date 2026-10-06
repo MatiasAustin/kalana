@@ -43,18 +43,24 @@ export async function updateSocialLinks(links: any[]) {
     // Delete all current and insert new (simple sync)
     await db.delete(socialLinks);
     
-    if (links && links.length > 0) {
-      const linksToInsert = links.map((link, idx) => ({
+    const validLinks = (links || []).filter(
+      (link) => link.platform && link.platform.trim() && link.url && link.url.trim()
+    );
+
+    if (validLinks.length > 0) {
+      const linksToInsert = validLinks.map((link, idx) => ({
         id: uuidv4(),
-        platform: link.platform,
-        url: link.url,
-        isActive: link.isActive,
+        platform: link.platform.trim(),
+        url: link.url.trim(),
+        isActive: link.isActive !== false,
         sortOrder: idx
       }));
       await db.insert(socialLinks).values(linksToInsert);
     }
 
-    revalidatePath("/");
+    revalidatePath("/", "layout");
+    revalidatePath("/admin/settings/store");
+    revalidatePath("/admin/content/navigation");
     return { success: true };
   } catch (error: any) {
     console.error("[UPDATE_SOCIAL_ERROR]", error);

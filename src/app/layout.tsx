@@ -10,6 +10,8 @@ import { getSiteSettings } from "@/lib/cms-api";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
   const brandName = settings?.brandName || "KALANA";

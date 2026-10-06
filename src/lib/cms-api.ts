@@ -184,14 +184,18 @@ export async function getSocialLinks() {
       orderBy: (socials, { asc }) => [asc(socials.sortOrder)]
     });
 
-    if (!links || links.length === 0) {
-      const data = await getCmsData();
-      return data.socialLinks.filter((link: any) => link.active);
+    if (Array.isArray(links)) {
+      return links;
     }
-    return links;
-  } catch {
+  } catch (err) {
+    console.error("[GET_SOCIAL_LINKS_ERROR]", err);
+  }
+
+  try {
     const data = await getCmsData();
-    return data.socialLinks.filter((link: any) => link.active);
+    return Array.isArray(data.socialLinks) ? data.socialLinks.filter((link: any) => link.active) : [];
+  } catch {
+    return [];
   }
 }
 

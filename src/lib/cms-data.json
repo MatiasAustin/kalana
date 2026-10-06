@@ -30,9 +30,7 @@
     ]
   },
   "socialLinks": [
-    { "platform": "Instagram", "url": "https://instagram.com/kalana", "active": true },
-    { "platform": "TikTok", "url": "https://tiktok.com/@kalana", "active": true },
-    { "platform": "WhatsApp", "url": "https://wa.me/628111234567", "active": true }
+    { "platform": "Instagram", "url": "https://www.instagram.com/kalanaspace_", "active": true }
   ],
   "location": {
     "name": "Kalana Space",

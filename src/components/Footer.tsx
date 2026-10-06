@@ -56,8 +56,15 @@ export default async function Footer() {
               <h3 className="text-[10px] font-semibold tracking-[0.2em] text-kalana-black/40 uppercase mb-6">Socials</h3>
               <ul className="space-y-4 text-xs tracking-widest uppercase">
                 {socialLinks.map((social: any) => (
-                  <li key={social.platform}>
-                    <Link href={social.url} className="hover:opacity-50 transition-opacity">{social.platform}</Link>
+                  <li key={social.id || social.platform}>
+                    <a 
+                      href={social.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="hover:opacity-50 transition-opacity block"
+                    >
+                      {social.platform}
+                    </a>
                   </li>
                 ))}
               </ul>
