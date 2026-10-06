@@ -455,6 +455,182 @@ export function PagesEditor({ initialPagesData, customPages: initialCustom = [] 
                 </div>
 
                 <div className="pt-4 border-t border-gray-200 space-y-4">
+                  <h3 className="font-bold text-gray-900 uppercase">Roasting Craft & Workshop Documentation</h3>
+                  <p className="text-gray-500 text-[11px]">
+                    Photo archive documenting your coffee beans roasting stages, drum profiles, and community roasting workshops.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-semibold text-gray-700 uppercase mb-1">Section Badge</label>
+                      <input
+                        type="text"
+                        value={currentPage.roastingDocBadge || ""}
+                        onChange={(e) => handleUpdateField("roastingDocBadge", e.target.value)}
+                        placeholder="Archive / 02"
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-black outline-none font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-semibold text-gray-700 uppercase mb-1">Section Title</label>
+                      <input
+                        type="text"
+                        value={currentPage.roastingDocTitle || ""}
+                        onChange={(e) => handleUpdateField("roastingDocTitle", e.target.value)}
+                        placeholder="The Roasting Craft & Workshop Archive."
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-black outline-none font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700 uppercase mb-1">Section Description</label>
+                    <textarea
+                      rows={2}
+                      value={currentPage.roastingDocDesc || ""}
+                      onChange={(e) => handleUpdateField("roastingDocDesc", e.target.value)}
+                      placeholder="Documenting our small-batch roasting profiles, drum calibrations, and hands-on roasting masterclasses held at the Cikampek roastery."
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-black outline-none font-sans"
+                    />
+                  </div>
+
+                  {/* 4 Documentation Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                    {/* Card 1 */}
+                    <div className="p-4 border border-gray-200 rounded-lg bg-gray-50/50 space-y-3">
+                      <span className="font-semibold text-gray-800 uppercase text-[10px]">Photo Documentation 01</span>
+                      <ImageUploadField
+                        label="Stage 01 Photo"
+                        value={currentPage.roastDoc1Image || ""}
+                        onChange={(url) => handleUpdateField("roastDoc1Image", url)}
+                        aspectRatio="portrait"
+                        helperText="Green coffee grading & sorting (4:5 ratio)"
+                      />
+                      <input
+                        type="text"
+                        value={currentPage.roastDoc1Tag || ""}
+                        onChange={(e) => handleUpdateField("roastDoc1Tag", e.target.value)}
+                        placeholder="Stage 01 / Green Grading"
+                        className="w-full px-2 py-1.5 border border-gray-300 rounded bg-white text-xs font-mono"
+                      />
+                      <input
+                        type="text"
+                        value={currentPage.roastDoc1Title || ""}
+                        onChange={(e) => handleUpdateField("roastDoc1Title", e.target.value)}
+                        placeholder="Green Bean Selection & Moisture Check"
+                        className="w-full px-2 py-1.5 border border-gray-300 rounded bg-white text-xs font-semibold"
+                      />
+                      <textarea
+                        rows={2}
+                        value={currentPage.roastDoc1Desc || ""}
+                        onChange={(e) => handleUpdateField("roastDoc1Desc", e.target.value)}
+                        placeholder="Inspecting density and sorting specialty green lots..."
+                        className="w-full px-2 py-1.5 border border-gray-300 rounded bg-white text-xs"
+                      />
+                    </div>
+
+                    {/* Card 2 */}
+                    <div className="p-4 border border-gray-200 rounded-lg bg-gray-50/50 space-y-3">
+                      <span className="font-semibold text-gray-800 uppercase text-[10px]">Photo Documentation 02</span>
+                      <ImageUploadField
+                        label="Stage 02 Photo"
+                        value={currentPage.roastDoc2Image || ""}
+                        onChange={(url) => handleUpdateField("roastDoc2Image", url)}
+                        aspectRatio="portrait"
+                        helperText="Roasting drum & first crack (4:5 ratio)"
+                      />
+                      <input
+                        type="text"
+                        value={currentPage.roastDoc2Tag || ""}
+                        onChange={(e) => handleUpdateField("roastDoc2Tag", e.target.value)}
+                        placeholder="Stage 02 / The Drum"
+                        className="w-full px-2 py-1.5 border border-gray-300 rounded bg-white text-xs font-mono"
+                      />
+                      <input
+                        type="text"
+                        value={currentPage.roastDoc2Title || ""}
+                        onChange={(e) => handleUpdateField("roastDoc2Title", e.target.value)}
+                        placeholder="Thermal Transfer & First Crack"
+                        className="w-full px-2 py-1.5 border border-gray-300 rounded bg-white text-xs font-semibold"
+                      />
+                      <textarea
+                        rows={2}
+                        value={currentPage.roastDoc2Desc || ""}
+                        onChange={(e) => handleUpdateField("roastDoc2Desc", e.target.value)}
+                        placeholder="Logging the roast curve, modulating airflow, and checking aroma..."
+                        className="w-full px-2 py-1.5 border border-gray-300 rounded bg-white text-xs"
+                      />
+                    </div>
+
+                    {/* Card 3 */}
+                    <div className="p-4 border border-gray-200 rounded-lg bg-gray-50/50 space-y-3">
+                      <span className="font-semibold text-gray-800 uppercase text-[10px]">Photo Documentation 03</span>
+                      <ImageUploadField
+                        label="Stage 03 Photo"
+                        value={currentPage.roastDoc3Image || ""}
+                        onChange={(url) => handleUpdateField("roastDoc3Image", url)}
+                        aspectRatio="portrait"
+                        helperText="Cooling tray & degassing (4:5 ratio)"
+                      />
+                      <input
+                        type="text"
+                        value={currentPage.roastDoc3Tag || ""}
+                        onChange={(e) => handleUpdateField("roastDoc3Tag", e.target.value)}
+                        placeholder="Stage 03 / Cooling Tray"
+                        className="w-full px-2 py-1.5 border border-gray-300 rounded bg-white text-xs font-mono"
+                      />
+                      <input
+                        type="text"
+                        value={currentPage.roastDoc3Title || ""}
+                        onChange={(e) => handleUpdateField("roastDoc3Title", e.target.value)}
+                        placeholder="Cooling Agitation & Degassing"
+                        className="w-full px-2 py-1.5 border border-gray-300 rounded bg-white text-xs font-semibold"
+                      />
+                      <textarea
+                        rows={2}
+                        value={currentPage.roastDoc3Desc || ""}
+                        onChange={(e) => handleUpdateField("roastDoc3Desc", e.target.value)}
+                        placeholder="Rapid cooling stops residual thermal inertia..."
+                        className="w-full px-2 py-1.5 border border-gray-300 rounded bg-white text-xs"
+                      />
+                    </div>
+
+                    {/* Card 4 */}
+                    <div className="p-4 border border-gray-200 rounded-lg bg-gray-50/50 space-y-3">
+                      <span className="font-semibold text-gray-800 uppercase text-[10px]">Photo Documentation 04</span>
+                      <ImageUploadField
+                        label="Stage 04 Photo"
+                        value={currentPage.roastDoc4Image || ""}
+                        onChange={(url) => handleUpdateField("roastDoc4Image", url)}
+                        aspectRatio="portrait"
+                        helperText="Cupping table & workshop masterclass (4:5 ratio)"
+                      />
+                      <input
+                        type="text"
+                        value={currentPage.roastDoc4Tag || ""}
+                        onChange={(e) => handleUpdateField("roastDoc4Tag", e.target.value)}
+                        placeholder="Stage 04 / Cupping Table"
+                        className="w-full px-2 py-1.5 border border-gray-300 rounded bg-white text-xs font-mono"
+                      />
+                      <input
+                        type="text"
+                        value={currentPage.roastDoc4Title || ""}
+                        onChange={(e) => handleUpdateField("roastDoc4Title", e.target.value)}
+                        placeholder="Sensory Cupping & Workshop Session"
+                        className="w-full px-2 py-1.5 border border-gray-300 rounded bg-white text-xs font-semibold"
+                      />
+                      <textarea
+                        rows={2}
+                        value={currentPage.roastDoc4Desc || ""}
+                        onChange={(e) => handleUpdateField("roastDoc4Desc", e.target.value)}
+                        placeholder="Baristas and workshop attendees dialing in acidity..."
+                        className="w-full px-2 py-1.5 border border-gray-300 rounded bg-white text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-gray-200 space-y-4">
                   <h3 className="font-bold text-gray-900 uppercase">Future Series (In Development)</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="p-3 border rounded bg-gray-50/50">

@@ -119,6 +119,123 @@ export default async function RoasteryPage() {
         </div>
       </section>
 
+      {/* Roasting Craft & Workshop Documentation Section */}
+      <section className="py-24 px-6 lg:px-12 border-b border-kalana-black/20">
+        <div className="container mx-auto">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-16 gap-8">
+            <div>
+              <p className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 mb-4 font-mono">
+                {page.roastingDocBadge || "Archive / 02"}
+              </p>
+              <h2 className="text-4xl md:text-6xl font-semibold tracking-tight uppercase leading-none">
+                {page.roastingDocTitle || "The Roasting Craft & Workshop Archive."}
+              </h2>
+            </div>
+            <p className="text-sm tracking-wide max-w-md text-kalana-black/70 font-light leading-relaxed">
+              {page.roastingDocDesc || "Documenting our small-batch roasting profiles, drum calibrations, and hands-on roasting masterclasses held at the Cikampek roastery."}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Documentation Card 1 */}
+            <div className="group flex flex-col">
+              <div className="aspect-[4/5] bg-kalana-black/5 border border-kalana-black/10 overflow-hidden relative mb-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={page.roastDoc1Image || "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1200&auto=format&fit=crop"}
+                  alt={page.roastDoc1Title || "Green Bean Grading"}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              </div>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-kalana-black/50 mb-1">
+                {page.roastDoc1Tag || "Stage 01 / Green Grading"}
+              </span>
+              <h4 className="text-base font-semibold uppercase tracking-tight mb-1">
+                {page.roastDoc1Title || "Green Bean Selection & Moisture Check"}
+              </h4>
+              <p className="text-xs text-kalana-black/70 font-light leading-relaxed">
+                {page.roastDoc1Desc || "Inspecting density and sorting specialty green lots before thermal charging."}
+              </p>
+            </div>
+
+            {/* Documentation Card 2 */}
+            <div className="group flex flex-col">
+              <div className="aspect-[4/5] bg-kalana-black/5 border border-kalana-black/10 overflow-hidden relative mb-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={page.roastDoc2Image || "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=1200&auto=format&fit=crop"}
+                  alt={page.roastDoc2Title || "The Drum"}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              </div>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-kalana-black/50 mb-1">
+                {page.roastDoc2Tag || "Stage 02 / The Drum"}
+              </span>
+              <h4 className="text-base font-semibold uppercase tracking-tight mb-1">
+                {page.roastDoc2Title || "Thermal Transfer & First Crack"}
+              </h4>
+              <p className="text-xs text-kalana-black/70 font-light leading-relaxed">
+                {page.roastDoc2Desc || "Logging the roast curve, modulating airflow, and checking aroma with the trier."}
+              </p>
+            </div>
+
+            {/* Documentation Card 3 */}
+            <div className="group flex flex-col">
+              <div className="aspect-[4/5] bg-kalana-black/5 border border-kalana-black/10 overflow-hidden relative mb-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={page.roastDoc3Image || "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=1200&auto=format&fit=crop"}
+                  alt={page.roastDoc3Title || "Cooling Tray"}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              </div>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-kalana-black/50 mb-1">
+                {page.roastDoc3Tag || "Stage 03 / Cooling Tray"}
+              </span>
+              <h4 className="text-base font-semibold uppercase tracking-tight mb-1">
+                {page.roastDoc3Title || "Cooling Agitation & Degassing"}
+              </h4>
+              <p className="text-xs text-kalana-black/70 font-light leading-relaxed">
+                {page.roastDoc3Desc || "Rapid cooling stops residual thermal inertia and locks in vibrant aromatic compounds."}
+              </p>
+            </div>
+
+            {/* Documentation Card 4 */}
+            <div className="group flex flex-col">
+              <div className="aspect-[4/5] bg-kalana-black/5 border border-kalana-black/10 overflow-hidden relative mb-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={page.roastDoc4Image || "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=1200&auto=format&fit=crop"}
+                  alt={page.roastDoc4Title || "Cupping Table"}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              </div>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-kalana-black/50 mb-1">
+                {page.roastDoc4Tag || "Stage 04 / Cupping Table"}
+              </span>
+              <h4 className="text-base font-semibold uppercase tracking-tight mb-1">
+                {page.roastDoc4Title || "Sensory Cupping & Workshop Session"}
+              </h4>
+              <p className="text-xs text-kalana-black/70 font-light leading-relaxed">
+                {page.roastDoc4Desc || "Baristas and workshop attendees dialing in acidity, body, and sweetness notes together."}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-16 pt-8 border-t border-kalana-black/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <p className="text-xs text-kalana-black/60 font-mono uppercase tracking-wider">
+              Interested in experiencing hands-on coffee roasting and sensory calibration?
+            </p>
+            <Link
+              href="/space/workshops"
+              className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest border-b border-kalana-black pb-1 hover:opacity-60 transition-opacity font-semibold"
+            >
+              Join Roastery Workshop <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Future Collections */}
       <section className="py-32 px-6 lg:px-12 bg-kalana-black text-kalana-offwhite">
         <div className="container mx-auto">
