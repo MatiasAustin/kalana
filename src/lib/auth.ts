@@ -10,7 +10,7 @@ export async function checkAdminAccess() {
   const { userId } = await auth();
   
   if (!userId) {
-    redirect('/admin/login');
+    redirect('/login?redirect_url=/admin');
   }
 
   const user = await db.query.users.findFirst({

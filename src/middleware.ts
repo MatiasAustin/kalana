@@ -17,8 +17,8 @@ export default clerkMiddleware(async (auth, req) => {
       if (isAdminApiRoute(req)) {
         return new Response('Unauthorized', { status: 401 });
       }
-      // Redirect to custom admin login
-      const url = new URL('/auth/admin-login', req.url);
+      // Redirect to login page
+      const url = new URL('/login?redirect_url=/admin', req.url);
       return Response.redirect(url);
     }
   }
