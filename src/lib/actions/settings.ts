@@ -83,6 +83,9 @@ export async function updatePrimaryLocation(data: any) {
     }
 
     revalidatePath("/");
+    revalidatePath("/space");
+    revalidatePath("/contact");
+    revalidatePath("/admin/space/location");
     return { success: true };
   } catch (error: any) {
     console.error("[UPDATE_LOCATION_ERROR]", error);

@@ -3,25 +3,30 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getHomepage, getLocation } from "@/lib/cms-api";
 import { db } from "@/lib/db";
-import { products, productVariants, productMedia } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { products, productVariants, productMedia, events } from "@/lib/db/schema";
+import { eq, desc } from "drizzle-orm";
 
 export default async function Home() {
-  const homepage = await getHomepage();
-  const location = await getLocation();
-
-  // Fetch products dynamically from DB
-  const dbProducts = await db.query.products.findMany({
-    where: eq(products.status, 'ACTIVE'),
-    with: {
-      variants: true,
-      media: {
-        with: {
-          media: true
+  const [homepage, location, dbProducts, dbEvents] = await Promise.all([
+    getHomepage(),
+    getLocation(),
+    db.query.products.findMany({
+      where: eq(products.status, 'ACTIVE'),
+      with: {
+        variants: true,
+        media: {
+          with: {
+            media: true
+          }
         }
       }
-    }
-  }).catch(() => []);
+    }).catch(() => []),
+    db.query.events.findMany({
+      where: eq(events.status, 'UPCOMING'),
+      orderBy: [desc(events.date)],
+      limit: 3,
+    }).catch(() => []),
+  ]);
 
   const featuredProducts = dbProducts.slice(0, 2);
 
@@ -229,21 +234,37 @@ export default async function Home() {
           </div>
 
           <div className="space-y-8">
-            {homepage.workshops.events.map((event: any, i: number) => (
-              <div key={i} className="group border-b border-kalana-black/10 pb-8 flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer hover:border-kalana-black transition-colors">
+            {(dbEvents.length > 0
+              ? dbEvents.map((ev: any) => ({
+                  id: ev.id,
+                  date: ev.date ? new Date(ev.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Upcoming",
+                  year: ev.date ? new Date(ev.date).getFullYear().toString() : "2026",
+                  title: ev.title,
+                  category: ev.category || ev.type || "Workshop",
+                  url: ev.registrationUrl || "/space/workshops",
+                }))
+              : homepage.workshops.events || []
+            ).map((event: any, i: number) => (
+              <Link
+                href={event.url || "/space/workshops"}
+                key={event.id || i}
+                className="group border-b border-kalana-black/10 pb-8 flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer hover:border-kalana-black transition-colors block"
+              >
                 <div className="flex items-center gap-8 md:w-1/3">
-                   <span className="text-xs tracking-widest text-kalana-black/30">0{i+1}</span>
-                   <div>
-                     <p className="text-[10px] uppercase tracking-[0.2em] text-kalana-black/60">{event.date}</p>
-                     <p className="text-[10px] uppercase tracking-[0.2em] text-kalana-black/40">{event.year}</p>
-                   </div>
+                  <span className="text-xs tracking-widest text-kalana-black/30">0{i + 1}</span>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-kalana-black/60">{event.date}</p>
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-kalana-black/40">{event.year}</p>
+                  </div>
                 </div>
-                <h3 className="text-2xl md:text-3xl font-medium uppercase tracking-tight md:w-1/3 group-hover:pl-4 transition-all">{event.title}</h3>
+                <h3 className="text-2xl md:text-3xl font-medium uppercase tracking-tight md:w-1/3 group-hover:pl-4 transition-all">
+                  {event.title}
+                </h3>
                 <div className="md:w-1/3 flex justify-between items-center text-[10px] tracking-[0.2em] uppercase">
                   <span className="text-kalana-black/50">{event.category}</span>
                   <span className="opacity-0 group-hover:opacity-100 transition-opacity">Register →</span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

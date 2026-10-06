@@ -249,6 +249,7 @@ export const locations = sqliteTable('locations', {
   email: text('email'),
   openingHours: text('opening_hours'),
   coverMediaId: text('cover_media_id').references(() => media.id),
+  coverImageUrl: text('cover_image_url'),
   isPrimary: integer('is_primary', { mode: 'boolean' }).default(false),
 });
 
@@ -258,6 +259,7 @@ export const events = sqliteTable('events', {
   slug: text('slug').unique().notNull(),
   description: text('description'),
   type: text('type'), // EVENT, WORKSHOP
+  category: text('category'), // Coffee Education, Creative Workshops, Community
   locationId: text('location_id').references(() => locations.id),
   date: integer('date', { mode: 'timestamp' }),
   startTime: text('start_time'),
@@ -266,6 +268,7 @@ export const events = sqliteTable('events', {
   price: real('price').default(0),
   registrationUrl: text('registration_url'),
   coverMediaId: text('cover_media_id').references(() => media.id),
+  coverImageUrl: text('cover_image_url'),
   status: text('status').default('UPCOMING'), // UPCOMING, COMPLETED, CANCELLED
   isFeatured: integer('is_featured', { mode: 'boolean' }).default(false),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),

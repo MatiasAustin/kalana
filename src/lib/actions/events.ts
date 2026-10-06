@@ -12,12 +12,16 @@ export async function createEvent(data: {
   slug: string;
   description?: string;
   type?: string;
+  category?: string;
   date?: string;
   startTime?: string;
   endTime?: string;
   price?: number;
+  capacity?: number;
   registrationUrl?: string;
+  coverImageUrl?: string;
   status?: string;
+  isFeatured?: boolean;
 }) {
   try {
     await requireAdminApi();
@@ -31,15 +35,21 @@ export async function createEvent(data: {
       slug: data.slug || `event-${Date.now()}`,
       description: data.description,
       type: data.type || "WORKSHOP",
+      category: data.category || "Coffee Education",
       date: eventDate,
       startTime: data.startTime,
       endTime: data.endTime,
-      price: data.price || 0,
+      price: data.price !== undefined ? Number(data.price) : 0,
+      capacity: data.capacity !== undefined ? Number(data.capacity) : undefined,
       registrationUrl: data.registrationUrl,
+      coverImageUrl: data.coverImageUrl,
       status: data.status || "UPCOMING",
+      isFeatured: data.isFeatured ? true : false,
     });
 
     revalidatePath("/space/workshops");
+    revalidatePath("/space");
+    revalidatePath("/");
     revalidatePath("/admin/space/workshops");
     revalidatePath("/admin/space/events");
 
@@ -62,16 +72,22 @@ export async function updateEvent(id: string, data: any) {
         slug: data.slug,
         description: data.description,
         type: data.type,
+        category: data.category,
         ...(eventDate ? { date: eventDate } : {}),
         startTime: data.startTime,
         endTime: data.endTime,
-        price: data.price,
+        price: data.price !== undefined ? Number(data.price) : undefined,
+        capacity: data.capacity !== undefined ? Number(data.capacity) : undefined,
         registrationUrl: data.registrationUrl,
+        coverImageUrl: data.coverImageUrl,
         status: data.status,
+        isFeatured: data.isFeatured !== undefined ? Boolean(data.isFeatured) : undefined,
       })
       .where(eq(events.id, id));
 
     revalidatePath("/space/workshops");
+    revalidatePath("/space");
+    revalidatePath("/");
     revalidatePath("/admin/space/workshops");
     revalidatePath("/admin/space/events");
 
@@ -89,6 +105,8 @@ export async function deleteEvent(id: string) {
     await db.delete(events).where(eq(events.id, id));
 
     revalidatePath("/space/workshops");
+    revalidatePath("/space");
+    revalidatePath("/");
     revalidatePath("/admin/space/workshops");
     revalidatePath("/admin/space/events");
 
