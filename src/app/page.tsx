@@ -21,7 +21,7 @@ export default async function Home() {
         }
       }
     }
-  });
+  }).catch(() => []);
 
   const featuredProducts = dbProducts.slice(0, 2);
 
@@ -61,8 +61,12 @@ export default async function Home() {
           
           <div className="lg:col-span-5 relative flex items-end">
             <div className="w-full aspect-[3/4] bg-kalana-black/5 border border-kalana-black/10 relative overflow-hidden">
-               {/* Hero Image */}
-               <div className="absolute inset-0 bg-kalana-black mix-blend-multiply opacity-10"></div>
+               {homepage.hero?.imageUrl ? (
+                 // eslint-disable-next-line @next/next/no-img-element
+                 <img src={homepage.hero.imageUrl} alt={homepage.hero.eyebrow || "KALANA Hero"} className="w-full h-full object-cover" />
+               ) : (
+                 <div className="absolute inset-0 bg-kalana-black mix-blend-multiply opacity-10"></div>
+               )}
             </div>
             <div className="absolute -bottom-8 -left-16 w-48 aspect-square bg-kalana-black/10 border border-kalana-black/20 hidden lg:block"></div>
           </div>
@@ -143,8 +147,8 @@ export default async function Home() {
             <p className="text-lg md:text-xl font-light leading-relaxed text-kalana-offwhite/80 mb-8 border-l border-kalana-offwhite/20 pl-8">
               {homepage.brandStory.description}
             </p>
-            <div className="absolute -top-32 -right-32 text-[20vw] opacity-5 text-kalana-offwhite font-bold tracking-tighter pointer-events-none hidden lg:block">
-              RITUAL
+            <div className="absolute -top-32 -right-32 text-[20vw] opacity-5 text-kalana-offwhite font-bold tracking-tighter pointer-events-none hidden lg:block uppercase">
+              {homepage.brandStory?.watermark || "RITUAL"}
             </div>
           </div>
         </div>
@@ -184,7 +188,12 @@ export default async function Home() {
         <div className="container mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
             <div className="lg:col-span-7">
-              <div className="w-full aspect-video bg-kalana-black/5 border border-kalana-black/10"></div>
+              <div className="w-full aspect-video bg-kalana-black/5 border border-kalana-black/10 relative overflow-hidden">
+                {homepage.space?.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={homepage.space.imageUrl} alt={homepage.space?.title || "KALANA Space"} className="w-full h-full object-cover" />
+                ) : null}
+              </div>
             </div>
             <div className="lg:col-span-4 lg:col-start-9 pt-12">
               <p className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 mb-6">{homepage.space.eyebrow}</p>

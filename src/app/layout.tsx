@@ -6,22 +6,42 @@ import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
 import { ClerkProvider } from '@clerk/nextjs'
 import StorefrontOnly from "@/components/StorefrontOnly";
+import { getSiteSettings } from "@/lib/cms-api";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
-export const metadata: Metadata = {
-  title: "KALANA | Space. Coffee. Further Days.",
-  description: "KALANA is a space, a roastery, and a growing collection of things made for everyday journeys.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  const brandName = settings?.brandName || "KALANA";
+  const tagline = settings?.tagline || "Space. Coffee. Further Days.";
+  const favicon = settings?.faviconUrl || "/favicon.ico";
 
-export default function RootLayout({
+  return {
+    title: `${brandName} | ${tagline}`,
+    description: "KALANA is a space, a roastery, and a growing collection of things made for everyday journeys.",
+    icons: {
+      icon: favicon,
+      shortcut: favicon,
+      apple: favicon,
+    },
+  };
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const settings = await getSiteSettings();
+
   return (
     <ClerkProvider>
       <html lang="en">
+        <head>
+          {settings?.faviconUrl && (
+            <link rel="icon" href={settings.faviconUrl} />
+          )}
+        </head>
         <body className={`${inter.variable} font-sans antialiased bg-kalana-offwhite text-kalana-black min-h-screen flex flex-col`}>
           <StorefrontOnly>
             <Header />

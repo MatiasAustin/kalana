@@ -16,7 +16,7 @@ export default async function RoasteryPage() {
       }
     },
     orderBy: [desc(products.createdAt)],
-  });
+  }).catch(() => []);
   return (
     <div className="w-full bg-kalana-offwhite pt-32 text-kalana-black min-h-screen">
       

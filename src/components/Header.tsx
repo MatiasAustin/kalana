@@ -11,6 +11,7 @@ export default async function Header() {
     <HeaderClient 
       navLinks={navigation.header}
       brandName={settings.brandName}
+      logoUrl={settings.logoUrl}
       location={location}
       socialLinks={socialLinks}
     />

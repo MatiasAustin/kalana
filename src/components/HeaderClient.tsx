@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 import { useAuth } from "@clerk/nextjs";
 
-export default function HeaderClient({ navLinks, brandName, location, socialLinks }: any) {
+export default function HeaderClient({ navLinks, brandName, logoUrl, location, socialLinks }: any) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -37,9 +37,14 @@ export default function HeaderClient({ navLinks, brandName, location, socialLink
         <div className="container mx-auto px-6 lg:px-12 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="z-50 group flex items-center gap-2">
-            <span className="text-sm font-bold tracking-[0.2em] uppercase text-kalana-black group-hover:opacity-70 transition-opacity">
-              {brandName}
-            </span>
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt={brandName} className="h-6 w-auto object-contain max-h-8" />
+            ) : (
+              <span className="text-sm font-bold tracking-[0.2em] uppercase text-kalana-black group-hover:opacity-70 transition-opacity">
+                {brandName}
+              </span>
+            )}
             <span className="text-[10px] tracking-widest uppercase text-kalana-black/50 hidden sm:inline-block">/ EST. 2026</span>
           </Link>
 

@@ -1,1 +1,12 @@
-export default function PlaceholderPage() { return (<div className="max-w-4xl mx-auto py-12 text-center"><h1 className="text-2xl font-bold text-gray-900 mb-4">Coming Soon</h1><p className="text-gray-500">This feature is currently under development.</p></div>); }
+import { LocationEditor } from "@/components/admin/LocationEditor";
+import { db } from "@/lib/db";
+import { locations } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
+
+export default async function AdminSpaceLocationPage() {
+  const primaryLocation = await db.query.locations.findFirst({
+    where: eq(locations.isPrimary, true)
+  }).catch(() => null);
+
+  return <LocationEditor initialLocation={primaryLocation} />;
+}

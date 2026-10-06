@@ -206,6 +206,8 @@ export const siteSettings = sqliteTable('site_settings', {
   currency: text('currency'),
   timezone: text('timezone'),
   logoMediaId: text('logo_media_id').references(() => media.id),
+  logoUrl: text('logo_url'),
+  faviconUrl: text('favicon_url'),
   
   // Payment Gateway Settings
   activePaymentGateway: text('active_payment_gateway').default('NONE'), // 'MAYAR', 'DOKU', 'NONE'
@@ -284,6 +286,14 @@ export const homepageSections = sqliteTable('homepage_sections', {
   sortOrder: integer('sort_order').default(0),
   isEnabled: integer('is_enabled', { mode: 'boolean' }).default(true),
   data: text('data'), // JSON blob of section specific content (headline, ctas, references)
+});
+
+export const sitePages = sqliteTable('site_pages', {
+  id: text('id').primaryKey(),
+  slug: text('slug').unique().notNull(), // 'about', 'space', 'goods', 'terms', 'privacy', 'shipping'
+  title: text('title').notNull(),
+  data: text('data'), // JSON blob of page structure
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
 
 import { relations } from 'drizzle-orm';

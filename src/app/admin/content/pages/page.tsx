@@ -1,1 +1,24 @@
-export default function PlaceholderPage() { return (<div className="max-w-4xl mx-auto py-12 text-center"><h1 className="text-2xl font-bold text-gray-900 mb-4">Coming Soon</h1><p className="text-gray-500">This feature is currently under development.</p></div>); }
+import { PagesEditor } from "@/components/admin/PagesEditor";
+import { getPageContent } from "@/lib/cms-api";
+
+export default async function AdminPagesPage() {
+  const [about, space, goods, terms, privacy, shipping] = await Promise.all([
+    getPageContent("about"),
+    getPageContent("space"),
+    getPageContent("goods"),
+    getPageContent("terms"),
+    getPageContent("privacy"),
+    getPageContent("shipping"),
+  ]);
+
+  const initialPagesData = {
+    about,
+    space,
+    goods,
+    terms,
+    privacy,
+    shipping,
+  };
+
+  return <PagesEditor initialPagesData={initialPagesData} />;
+}

@@ -1,1 +1,12 @@
-export default function PlaceholderPage() { return (<div className="max-w-4xl mx-auto py-12 text-center"><h1 className="text-2xl font-bold text-gray-900 mb-4">Coming Soon</h1><p className="text-gray-500">This feature is currently under development.</p></div>); }
+import { EventsManager } from "@/components/admin/EventsManager";
+import { db } from "@/lib/db";
+import { events } from "@/lib/db/schema";
+import { desc } from "drizzle-orm";
+
+export default async function AdminWorkshopsPage() {
+  const allEvents = await db.query.events.findMany({
+    orderBy: [desc(events.date)]
+  }).catch(() => []);
+
+  return <EventsManager initialEvents={allEvents} defaultType="WORKSHOP" />;
+}

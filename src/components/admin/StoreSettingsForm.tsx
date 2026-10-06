@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateSiteSettings, updatePrimaryLocation, updateSocialLinks } from "@/lib/actions/settings";
 import { Loader2, Plus, Trash2 } from "lucide-react";
+import { ImageUploadField } from "./ImageUploadField";
 
 export function StoreSettingsForm({ initialSettings, initialLocation, initialSocials }: any) {
   const router = useRouter();
@@ -15,6 +16,8 @@ export function StoreSettingsForm({ initialSettings, initialLocation, initialSoc
     tagline: initialSettings?.tagline || "",
     primaryEmail: initialSettings?.primaryEmail || "",
     phone: initialSettings?.phone || "",
+    logoUrl: initialSettings?.logoUrl || "",
+    faviconUrl: initialSettings?.faviconUrl || "",
   });
 
   const [location, setLocation] = useState({
@@ -105,6 +108,38 @@ export function StoreSettingsForm({ initialSettings, initialLocation, initialSoc
               value={settings.phone}
               onChange={e => setSettings({...settings, phone: e.target.value})}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black" 
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Branding (Logo & Favicon) */}
+      <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-6">
+        <div>
+          <h2 className="text-lg font-medium text-gray-900 border-b pb-2 mb-1">Branding & Assets</h2>
+          <p className="text-xs text-gray-500">Upload your store logo and browser favicon.</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <ImageUploadField 
+              label="Website Logo"
+              description="Displayed in the header and navigation bar. Recommended format: SVG or transparent PNG."
+              value={settings.logoUrl}
+              onChange={(url) => setSettings({ ...settings, logoUrl: url })}
+              folder="branding"
+              aspectRatio="auto"
+            />
+          </div>
+
+          <div>
+            <ImageUploadField 
+              label="Website Favicon"
+              description="Displayed in browser tabs and bookmarks. Recommended format: 32x32 or 64x64 PNG or ICO."
+              value={settings.faviconUrl}
+              onChange={(url) => setSettings({ ...settings, faviconUrl: url })}
+              folder="branding"
+              aspectRatio="square"
             />
           </div>
         </div>

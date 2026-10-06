@@ -1,1 +1,7 @@
-export default function PlaceholderPage() { return (<div className="max-w-4xl mx-auto py-12 text-center"><h1 className="text-2xl font-bold text-gray-900 mb-4">Coming Soon</h1><p className="text-gray-500">This feature is currently under development.</p></div>); }
+import { NavigationEditor } from "@/components/admin/NavigationEditor";
+import { getNavigation } from "@/lib/cms-api";
+
+export default async function AdminNavigationPage() {
+  const nav = await getNavigation();
+  return <NavigationEditor initialNav={nav} />;
+}
