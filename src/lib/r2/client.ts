@@ -9,18 +9,43 @@ const accountId = rawAccountId.replace(/^https?:\/\//, '').replace(/\.r2\.cloudf
 export const r2Client = new S3Client({
   region: 'auto',
   endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+  forcePathStyle: true,
   credentials: {
     accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
     secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
   },
 });
 
+export async function uploadToR2(
+  fileBuffer: Buffer | Uint8Array,
+  filename: string,
+  contentType: string,
+  folder: string = 'misc'
+) {
+  const fileExtension = filename.split('.').pop() || 'png';
+  const key = `kalana/${folder}/${uuidv4()}.${fileExtension}`;
+  const bucket = process.env.R2_BUCKET_NAME || 'kalana-media';
+
+  const command = new PutObjectCommand({
+    Bucket: bucket,
+    Key: key,
+    Body: fileBuffer,
+    ContentType: contentType,
+  });
+
+  await r2Client.send(command);
+  const publicUrl = `/api/media/${key}`;
+
+  return { key, publicUrl };
+}
+
 export async function generateUploadUrl(filename: string, contentType: string, folder: string = 'misc') {
   const fileExtension = filename.split('.').pop();
   const key = `kalana/${folder}/${uuidv4()}.${fileExtension}`;
+  const bucket = process.env.R2_BUCKET_NAME || 'kalana-media';
   
   const command = new PutObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME,
+    Bucket: bucket,
     Key: key,
     ContentType: contentType,
   });

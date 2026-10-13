@@ -107,34 +107,22 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
       const newMediaIds = [...uploadedMediaIds];
       
       for (const media of mediaFiles) {
-        // Get presigned URL
-        const presignedRes = await fetch('/api/upload', {
+        // Upload directly via server-side API (no CORS / ISP issues)
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', media.file);
+        uploadFormData.append('folder', 'products');
+
+        const uploadRes = await fetch('/api/upload', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            filename: media.file.name,
-            contentType: media.file.type,
-            size: media.file.size,
-            folder: 'products'
-          })
-        });
-
-        if (!presignedRes.ok) throw new Error('Failed to get upload URL');
-        const { uploadUrl, key, publicUrl } = await presignedRes.json();
-
-        // Upload directly to R2
-        const uploadRes = await fetch(uploadUrl, {
-          method: 'PUT',
-          body: media.file,
-          headers: { 'Content-Type': media.file.type }
-        }).catch(err => {
-          throw new Error(`Failed to fetch. URL: ${uploadUrl.substring(0, 50)}... Error: ${err.message}`);
+          body: uploadFormData,
         });
 
         if (!uploadRes.ok) {
-          const text = await uploadRes.text().catch(() => '');
-          throw new Error(`Failed to upload file to R2: ${uploadRes.status} ${uploadRes.statusText} ${text}`);
+          const errText = await uploadRes.text().catch(() => '');
+          throw new Error(`Upload failed (${uploadRes.status}): ${errText || uploadRes.statusText}`);
         }
+
+        const { key, publicUrl } = await uploadRes.json();
 
         // Create Media Record in Turso
         const mediaRecord = await createMediaRecord({

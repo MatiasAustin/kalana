@@ -38,34 +38,22 @@ export function ImageUploadField({
     setError(null);
 
     try {
-      // 1. Get presigned URL
-      const presignedRes = await fetch("/api/upload", {
+      // Direct server-side upload via FormData (eliminates CORS and ISP connection issues)
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", file);
+      uploadFormData.append("folder", folder);
+
+      const uploadRes = await fetch("/api/upload", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          filename: file.name,
-          contentType: file.type || "image/png",
-          folder: folder
-        })
-      });
-
-      if (!presignedRes.ok) {
-        const errText = await presignedRes.text();
-        throw new Error(errText || "Failed to generate upload URL");
-      }
-
-      const { uploadUrl, publicUrl } = await presignedRes.json();
-
-      // 2. Upload to Cloudflare R2
-      const uploadRes = await fetch(uploadUrl, {
-        method: "PUT",
-        body: file,
-        headers: { "Content-Type": file.type || "image/png" }
+        body: uploadFormData,
       });
 
       if (!uploadRes.ok) {
-        throw new Error("Failed to upload image to storage");
+        const errText = await uploadRes.text().catch(() => "");
+        throw new Error(errText || "Failed to upload image to storage");
       }
+
+      const { publicUrl } = await uploadRes.json();
 
       onChange(publicUrl);
       setManualUrl(publicUrl);
