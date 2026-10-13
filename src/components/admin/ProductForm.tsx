@@ -18,6 +18,9 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
     name: initialData?.name || '',
     slug: initialData?.slug || '',
     description: initialData?.description || '',
+    blend: initialData?.blend || '',
+    roast: initialData?.roast || '',
+    tastingNotes: initialData?.tastingNotes || '',
     status: initialData?.status || 'ACTIVE',
   });
 
@@ -148,6 +151,9 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
         name: formData.name,
         slug: finalSlug,
         description: formData.description,
+        blend: formData.blend || undefined,
+        roast: formData.roast || undefined,
+        tastingNotes: formData.tastingNotes || undefined,
         status: formData.status as any,
         variants: variants.map((v: any) => ({
           id: v.id,
@@ -232,6 +238,50 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
                 placeholder="Product description..." 
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black"
               ></textarea>
+            </div>
+          </div>
+
+          {/* Coffee Profile / Specifications */}
+          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-4">
+            <div>
+              <h2 className="text-lg font-medium text-gray-900">Coffee Profile</h2>
+              <p className="text-xs text-gray-500">Spesifikasi kopi yang akan ditampilkan di halaman produk (Blend, Roast, Tasting Notes).</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Blend</label>
+                <input 
+                  type="text" 
+                  value={formData.blend}
+                  onChange={e => setFormData({...formData, blend: e.target.value})}
+                  placeholder="e.g., 70% Robusta / 30% Arabica" 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black text-sm" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Roast</label>
+                <input 
+                  type="text" 
+                  value={formData.roast}
+                  onChange={e => setFormData({...formData, roast: e.target.value})}
+                  placeholder="e.g., Medium, Medium-Dark, Filter Roast" 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black text-sm" 
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tasting Notes</label>
+              <input 
+                type="text" 
+                value={formData.tastingNotes}
+                onChange={e => setFormData({...formData, tastingNotes: e.target.value})}
+                placeholder="e.g., Dark Chocolate, Peanut, Brown Sugar" 
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black text-sm" 
+              />
+              <p className="text-xs text-gray-400 mt-1">Pisahkan tiap rasa dengan koma (contoh: Dark Chocolate, Peanut, Brown Sugar)</p>
             </div>
           </div>
 
