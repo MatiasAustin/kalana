@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Upload, X, Loader2, Image as ImageIcon, Link as LinkIcon } from "lucide-react";
+import { compressImage } from "@/lib/image-compress";
 
 interface ImageUploadFieldProps {
   label?: string;
@@ -38,9 +39,12 @@ export function ImageUploadField({
     setError(null);
 
     try {
+      // Automatically compress image before upload to avoid payload size issues
+      const compressedFile = await compressImage(file);
+
       // Direct server-side upload via FormData (eliminates CORS and ISP connection issues)
       const uploadFormData = new FormData();
-      uploadFormData.append("file", file);
+      uploadFormData.append("file", compressedFile);
       uploadFormData.append("folder", folder);
 
       const uploadRes = await fetch("/api/upload", {

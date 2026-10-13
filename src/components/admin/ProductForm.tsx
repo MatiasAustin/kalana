@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Image as ImageIcon, Plus, Trash2, Loader2 } from 'lucide-react';
 import { createProduct, updateProduct } from '@/lib/actions/products';
 import { createMediaRecord } from '@/lib/actions/media';
+import { compressImage } from '@/lib/image-compress';
 
 export function ProductForm({ initialData = null }: { initialData?: any }) {
   const router = useRouter();
@@ -107,9 +108,12 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
       const newMediaIds = [...uploadedMediaIds];
       
       for (const media of mediaFiles) {
+        // Automatically compress image before upload to prevent payload size issues
+        const compressedFile = await compressImage(media.file);
+
         // Upload directly via server-side API (no CORS / ISP issues)
         const uploadFormData = new FormData();
-        uploadFormData.append('file', media.file);
+        uploadFormData.append('file', compressedFile);
         uploadFormData.append('folder', 'products');
 
         const uploadRes = await fetch('/api/upload', {
@@ -127,10 +131,10 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
         // Create Media Record in Turso
         const mediaRecord = await createMediaRecord({
           key,
-          filename: media.file.name,
+          filename: compressedFile.name,
           url: publicUrl,
-          mimeType: media.file.type,
-          size: media.file.size,
+          mimeType: compressedFile.type,
+          size: compressedFile.size,
           folder: 'products'
         });
 
