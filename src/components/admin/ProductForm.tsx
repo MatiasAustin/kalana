@@ -21,8 +21,42 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
     blend: initialData?.blend || '',
     roast: initialData?.roast || '',
     tastingNotes: initialData?.tastingNotes || '',
+    body: initialData?.body || 'Full',
+    acidity: initialData?.acidity || 'Low',
     status: initialData?.status || 'ACTIVE',
   });
+
+  const getInitialBrewing = (): string[] => {
+    if (!initialData?.brewingGuide) return ['Espresso', 'Filter'];
+    if (Array.isArray(initialData.brewingGuide)) return initialData.brewingGuide;
+    try {
+      const parsed = JSON.parse(initialData.brewingGuide);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch {}
+    if (typeof initialData.brewingGuide === 'string' && initialData.brewingGuide.trim()) {
+      return initialData.brewingGuide.split(',').map((s: string) => s.trim()).filter(Boolean);
+    }
+    return ['Espresso', 'Filter'];
+  };
+
+  const [brewingMethods, setBrewingMethods] = useState<string[]>(getInitialBrewing());
+  const [customBrewMethod, setCustomBrewMethod] = useState('');
+
+  const toggleBrewingMethod = (method: string) => {
+    if (brewingMethods.includes(method)) {
+      setBrewingMethods(brewingMethods.filter(m => m !== method));
+    } else {
+      setBrewingMethods([...brewingMethods, method]);
+    }
+  };
+
+  const addCustomBrewMethod = () => {
+    const trimmed = customBrewMethod.trim();
+    if (trimmed && !brewingMethods.includes(trimmed)) {
+      setBrewingMethods([...brewingMethods, trimmed]);
+      setCustomBrewMethod('');
+    }
+  };
 
   const [variants, setVariants] = useState(
     initialData?.variants || [{ id: 'new-1', name: 'Default', sku: '', price: 0, weight: 0 }]
@@ -154,6 +188,9 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
         blend: formData.blend || undefined,
         roast: formData.roast || undefined,
         tastingNotes: formData.tastingNotes || undefined,
+        body: formData.body || undefined,
+        acidity: formData.acidity || undefined,
+        brewingGuide: JSON.stringify(brewingMethods),
         status: formData.status as any,
         variants: variants.map((v: any) => ({
           id: v.id,
@@ -282,6 +319,99 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black text-sm" 
               />
               <p className="text-xs text-gray-400 mt-1">Pisahkan tiap rasa dengan koma (contoh: Dark Chocolate, Peanut, Brown Sugar)</p>
+            </div>
+
+            {/* Body & Acidity */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Body</label>
+                <input 
+                  type="text" 
+                  value={formData.body}
+                  onChange={e => setFormData({...formData, body: e.target.value})}
+                  placeholder="e.g., Full, Medium, Silky" 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black text-sm" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Acidity</label>
+                <input 
+                  type="text" 
+                  value={formData.acidity}
+                  onChange={e => setFormData({...formData, acidity: e.target.value})}
+                  placeholder="e.g., Low, Medium, Bright" 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black text-sm" 
+                />
+              </div>
+            </div>
+
+            {/* Recommended Brewing */}
+            <div className="pt-2 border-t border-gray-100">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Recommended Brewing</label>
+              <p className="text-xs text-gray-400 mb-2.5">Pilih metode seduh yang disarankan atau ketik metode custom:</p>
+              
+              {/* Preset toggles */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                {['Espresso', 'Filter', 'Americano', 'Kopi Susu', 'V60', 'Cold Brew', 'French Press', 'Mokapot', 'AeroPress'].map((method) => {
+                  const isSelected = brewingMethods.includes(method);
+                  return (
+                    <button
+                      key={method}
+                      type="button"
+                      onClick={() => toggleBrewingMethod(method)}
+                      className={`text-xs px-3 py-1 rounded-full border transition-all ${
+                        isSelected 
+                          ? 'bg-black text-white border-black font-medium' 
+                          : 'bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-500'
+                      }`}
+                    >
+                      {isSelected ? '✓ ' : '+ '}{method}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Custom input */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={customBrewMethod}
+                  onChange={e => setCustomBrewMethod(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCustomBrewMethod(); } }}
+                  placeholder="Tambah metode lain (misal: Tubruk, Syphon)..."
+                  className="flex-1 px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black text-xs"
+                />
+                <button
+                  type="button"
+                  onClick={addCustomBrewMethod}
+                  className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-medium rounded-md border border-gray-300 cursor-pointer"
+                >
+                  Tambah
+                </button>
+              </div>
+
+              {/* Selected preview */}
+              {brewingMethods.length > 0 && (
+                <div className="mt-3 flex flex-wrap items-center gap-1.5 pt-2">
+                  <span className="text-[11px] text-gray-500 mr-1">Metode aktif:</span>
+                  {brewingMethods.map(method => (
+                    <span 
+                      key={method}
+                      className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded border border-gray-200"
+                    >
+                      {method}
+                      <button
+                        type="button"
+                        onClick={() => toggleBrewingMethod(method)}
+                        className="hover:text-red-500 ml-1 text-gray-400 font-bold"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

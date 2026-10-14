@@ -14,6 +14,9 @@ export type CreateProductInput = {
   blend?: string;
   roast?: string;
   tastingNotes?: string;
+  body?: string;
+  acidity?: string;
+  brewingGuide?: string;
   status: "DRAFT" | "ACTIVE" | "ARCHIVED";
   variants: {
     id?: string;
@@ -39,6 +42,9 @@ export async function createProduct(data: CreateProductInput) {
       blend: data.blend,
       roast: data.roast,
       tastingNotes: data.tastingNotes,
+      body: data.body,
+      acidity: data.acidity,
+      brewingGuide: data.brewingGuide,
       status: data.status,
     });
 
@@ -109,6 +115,9 @@ export async function updateProduct(id: string, data: CreateProductInput) {
         blend: data.blend,
         roast: data.roast,
         tastingNotes: data.tastingNotes,
+        body: data.body,
+        acidity: data.acidity,
+        brewingGuide: data.brewingGuide,
         status: data.status,
       })
       .where(eq(products.id, id));
@@ -252,6 +261,9 @@ export async function duplicateProduct(id: string) {
       blend: original.blend,
       roast: original.roast,
       tastingNotes: original.tastingNotes,
+      body: original.body,
+      acidity: original.acidity,
+      brewingGuide: original.brewingGuide,
       status: "DRAFT",
     });
 

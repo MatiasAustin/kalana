@@ -30,8 +30,22 @@ export default function ProductClient({ product }: { product: any }) {
   const body = product.body || "Full";
   const acidity = product.acidity || "Low";
   const description = product.description || "Everyday essential.";
-  const brewingGuide = ["Espresso", "Filter"];
-  const tastingNotes = product.tastingNotes ? product.tastingNotes.split(', ') : ["Balanced"];
+  let brewingGuide: string[] = ["Espresso", "Filter"];
+  if (product.brewingGuide) {
+    try {
+      const parsed = JSON.parse(product.brewingGuide);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        brewingGuide = parsed;
+      } else if (typeof product.brewingGuide === "string" && product.brewingGuide.trim()) {
+        brewingGuide = product.brewingGuide.split(",").map((s: string) => s.trim()).filter(Boolean);
+      }
+    } catch {
+      brewingGuide = product.brewingGuide.split(",").map((s: string) => s.trim()).filter(Boolean);
+    }
+  }
+  const tastingNotes = product.tastingNotes
+    ? product.tastingNotes.split(",").map((s: string) => s.trim()).filter(Boolean)
+    : ["Balanced"];
 
   const handleAddToCart = () => {
     if (!selectedVariant) return;
