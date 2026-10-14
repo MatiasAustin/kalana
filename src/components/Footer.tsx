@@ -65,6 +65,11 @@ export default async function Footer() {
                     <Link href={link.url} className="hover:opacity-50 transition-opacity">{link.label}</Link>
                   </li>
                 ))}
+                <li>
+                  <Link href="/tracking" className="hover:opacity-50 transition-opacity flex items-center gap-1 text-black font-semibold">
+                    Lacak Pesanan 🚚
+                  </Link>
+                </li>
               </ul>
             </div>
 
