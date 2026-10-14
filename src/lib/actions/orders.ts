@@ -132,6 +132,186 @@ export async function updateOrderNotes(orderId: string, notes: string) {
   }
 }
 
+export interface UpdateShipmentInput {
+  orderId: string;
+  courier: string;
+  courierService?: string;
+  trackingNumber?: string;
+  trackingUrl?: string;
+  shippingStatus: string;
+  currentLocation?: string;
+  estimatedDeliveryDate?: string;
+  newHistoryNote?: string;
+}
+
+export async function updateShipmentDetails(input: UpdateShipmentInput) {
+  try {
+    await requireAdminApi();
+
+    const current = await db.query.orders.findFirst({
+      where: eq(orders.id, input.orderId),
+      with: { shippingAddress: true },
+    });
+
+    if (!current) {
+      return { success: false, error: "Order not found" };
+    }
+
+    // Parse existing tracking history
+    let history: any[] = [];
+    if (current.trackingHistory) {
+      try {
+        history = JSON.parse(current.trackingHistory);
+      } catch {}
+    }
+
+    // Auto-generate official tracking link if none provided
+    let trackingUrl = input.trackingUrl;
+    if (!trackingUrl && input.trackingNumber && input.courier) {
+      const c = input.courier.toLowerCase();
+      const num = encodeURIComponent(input.trackingNumber.trim());
+      if (c.includes("jne")) {
+        trackingUrl = `https://www.jne.co.id/tracking`;
+      } else if (c.includes("j&t") || c.includes("jet")) {
+        trackingUrl = `https://www.jet.co.id/track`;
+      } else if (c.includes("sicepat")) {
+        trackingUrl = `https://www.sicepat.com/checkAwb`;
+      } else if (c.includes("anteraja")) {
+        trackingUrl = `https://anteraja.id/tracking`;
+      } else if (c.includes("lion")) {
+        trackingUrl = `https://lionparcel.com/track`;
+      } else if (c.includes("pos")) {
+        trackingUrl = `https://www.posindonesia.co.id`;
+      } else if (c.includes("id express")) {
+        trackingUrl = `https://idexpress.com`;
+      }
+    }
+
+    const statusTitles: Record<string, string> = {
+      PENDING: "Pesanan Masuk (Menunggu Pengemasan)",
+      PROCESSED: "Pesanan Selesai Dikemas di Roastery",
+      PICKED_UP: `Paket Telah Diserahkan ke ${input.courier || "Kurir"}`,
+      IN_TRANSIT: "Paket Sedang Dalam Perjalanan Antarkota",
+      OUT_FOR_DELIVERY: "Paket Dibawa Kurir Menuju Alamat Penerima",
+      DELIVERED: "Paket Berhasil Diterima oleh Pelanggan",
+    };
+
+    const isStatusChanged = current.shippingStatus !== input.shippingStatus;
+    const isLocationChanged = input.currentLocation && input.currentLocation !== current.currentLocation;
+
+    if (isStatusChanged || isLocationChanged || input.newHistoryNote || history.length === 0) {
+      const defaultLoc = input.shippingStatus === "DELIVERED"
+        ? (current.shippingAddress?.city || "Alamat Tujuan")
+        : (input.currentLocation || "KALANA Roastery (Cikampek)");
+
+      history.unshift({
+        id: uuidv4(),
+        timestamp: new Date().toISOString(),
+        status: input.shippingStatus,
+        title: statusTitles[input.shippingStatus] || input.shippingStatus,
+        location: input.currentLocation || defaultLoc,
+        note: input.newHistoryNote || (
+          input.shippingStatus === "PICKED_UP"
+            ? `Nomor Resi: ${input.trackingNumber || "-"}`
+            : input.shippingStatus === "DELIVERED"
+            ? "Paket telah diterima dengan baik. Terima kasih telah berbelanja di KALANA."
+            : undefined
+        )
+      });
+    }
+
+    // Determine fulfillmentStatus
+    let fulfillmentStatus = current.fulfillmentStatus;
+    if (input.shippingStatus === "DELIVERED") {
+      fulfillmentStatus = "FULFILLED";
+    } else if (["PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY"].includes(input.shippingStatus)) {
+      fulfillmentStatus = "FULFILLED";
+    }
+
+    let orderStatus = current.status;
+    if (input.shippingStatus === "DELIVERED" && current.paymentStatus === "PAID") {
+      orderStatus = "COMPLETED";
+    } else if (input.shippingStatus !== "PENDING" && orderStatus === "PENDING") {
+      orderStatus = "PROCESSING";
+    }
+
+    await db.update(orders)
+      .set({
+        courier: input.courier,
+        courierService: input.courierService || null,
+        trackingNumber: input.trackingNumber || null,
+        trackingUrl: trackingUrl || null,
+        shippingStatus: input.shippingStatus,
+        currentLocation: input.currentLocation || null,
+        estimatedDeliveryDate: input.estimatedDeliveryDate || null,
+        trackingHistory: JSON.stringify(history),
+        fulfillmentStatus,
+        status: orderStatus,
+        updatedAt: new Date(),
+      })
+      .where(eq(orders.id, input.orderId));
+
+    revalidatePath("/admin/orders");
+    revalidatePath(`/admin/orders/${input.orderId}`);
+    revalidatePath("/account/orders");
+    revalidatePath(`/tracking/${current.orderNumber}`);
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("[UPDATE_SHIPMENT_ERROR]", error);
+    return { success: false, error: error.message || "Gagal memperbarui pengiriman" };
+  }
+}
+
+export async function getShipmentTracking(orderNumber: string) {
+  try {
+    const order = await db.query.orders.findFirst({
+      where: eq(orders.orderNumber, orderNumber),
+      with: {
+        shippingAddress: true,
+        items: true,
+        customer: true,
+      },
+    });
+
+    if (!order) return null;
+
+    let history: any[] = [];
+    if (order.trackingHistory) {
+      try {
+        history = JSON.parse(order.trackingHistory);
+      } catch {}
+    }
+
+    return {
+      id: order.id,
+      orderNumber: order.orderNumber,
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      fulfillmentStatus: order.fulfillmentStatus,
+      shippingStatus: order.shippingStatus || "PENDING",
+      courier: order.courier,
+      courierService: order.courierService,
+      trackingNumber: order.trackingNumber,
+      trackingUrl: order.trackingUrl,
+      currentLocation: order.currentLocation,
+      estimatedDeliveryDate: order.estimatedDeliveryDate,
+      history,
+      shippingAddress: order.shippingAddress,
+      createdAt: order.createdAt,
+      total: order.total,
+      subtotal: order.subtotal,
+      shippingCost: order.shippingCost,
+      discount: order.discount,
+      items: order.items,
+      customer: order.customer,
+    };
+  } catch (error) {
+    console.error("[GET_SHIPMENT_TRACKING_ERROR]", error);
+    return null;
+  }
+}
+
 export interface CreateDraftOrderInput {
   customerId?: string;
   customerData?: {

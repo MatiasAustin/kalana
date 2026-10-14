@@ -25,6 +25,7 @@ import {
   updatePaymentStatus, 
   updateFulfillmentStatus, 
   updateOrderNotes,
+  updateShipmentDetails,
   deleteOrder 
 } from "@/lib/actions/orders";
 
@@ -39,10 +40,20 @@ export function OrderDetailClient({ order: initialOrder }: OrderDetailProps) {
   const [notes, setNotes] = useState(order.notes || "");
   const [notesSaved, setNotesSaved] = useState(false);
 
+  // Shipment & Live Tracking State
+  const [courier, setCourier] = useState(order.courier || "JNE Express");
+  const [courierService, setCourierService] = useState(order.courierService || "Reguler");
+  const [trackingNumber, setTrackingNumber] = useState(order.trackingNumber || "");
+  const [trackingUrl, setTrackingUrl] = useState(order.trackingUrl || "");
+  const [shippingStatus, setShippingStatus] = useState(order.shippingStatus || "PENDING");
+  const [currentLocation, setCurrentLocation] = useState(order.currentLocation || "KALANA Roastery (Cikampek)");
+  const [estimatedDeliveryDate, setEstimatedDeliveryDate] = useState(order.estimatedDeliveryDate || "");
+  const [newTimelineNote, setNewTimelineNote] = useState("");
+  const [isUpdatingShipment, setIsUpdatingShipment] = useState(false);
+  const [shipmentMessage, setShipmentMessage] = useState<string | null>(null);
+
   // Fulfillment Modal State
   const [showFulfillModal, setShowFulfillModal] = useState(false);
-  const [courier, setCourier] = useState("JNE");
-  const [trackingNumber, setTrackingNumber] = useState("");
 
   const handleUpdateStatus = async (newStatus: string) => {
     setLoadingAction("status");
@@ -78,15 +89,70 @@ export function OrderDetailClient({ order: initialOrder }: OrderDetailProps) {
     }
   };
 
+  const handleSaveShipment = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setIsUpdatingShipment(true);
+    setShipmentMessage(null);
+
+    try {
+      const res = await updateShipmentDetails({
+        orderId: order.id,
+        courier,
+        courierService,
+        trackingNumber,
+        trackingUrl,
+        shippingStatus,
+        currentLocation,
+        estimatedDeliveryDate,
+        newHistoryNote: newTimelineNote,
+      });
+
+      if (res.success) {
+        setShipmentMessage("Detail pengiriman & status live map berhasil diperbarui!");
+        setNewTimelineNote("");
+        setOrder((prev: any) => ({
+          ...prev,
+          courier,
+          courierService,
+          trackingNumber,
+          trackingUrl,
+          shippingStatus,
+          currentLocation,
+          estimatedDeliveryDate,
+          fulfillmentStatus: ["PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED"].includes(shippingStatus) ? "FULFILLED" : prev.fulfillmentStatus,
+        }));
+        router.refresh();
+      } else {
+        alert(res.error || "Gagal memperbarui pengiriman");
+      }
+    } catch (err: any) {
+      alert(err.message || "Error saat memperbarui pengiriman");
+    } finally {
+      setIsUpdatingShipment(false);
+    }
+  };
+
   const handleFulfill = async () => {
     setLoadingAction("fulfillment");
     try {
-      const res = await updateFulfillmentStatus(order.id, "FULFILLED", courier, trackingNumber);
+      const res = await updateShipmentDetails({
+        orderId: order.id,
+        courier,
+        courierService,
+        trackingNumber,
+        trackingUrl,
+        shippingStatus: "PICKED_UP",
+        currentLocation: "KALANA Roastery (Cikampek)",
+        estimatedDeliveryDate,
+        newHistoryNote: `Paket telah diproses dan diserahkan ke ${courier}. Resi: ${trackingNumber || "-"}`,
+      });
       if (res.success) {
         setOrder((prev: any) => ({
           ...prev,
           fulfillmentStatus: "FULFILLED",
-          notes: trackingNumber ? `${prev.notes || ""}\n[SHIPMENT] Courier: ${courier} | Tracking: ${trackingNumber}`.trim() : prev.notes
+          shippingStatus: "PICKED_UP",
+          courier,
+          trackingNumber,
         }));
         setShowFulfillModal(false);
         router.refresh();
@@ -333,6 +399,224 @@ export function OrderDetailClient({ order: initialOrder }: OrderDetailProps) {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Shipment & Live Tracking Card */}
+          <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-5 space-y-4 font-mono text-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <Truck className="w-4 h-4 text-amber-600" />
+                <h2 className="text-xs font-bold uppercase tracking-wider text-gray-900">
+                  Pengiriman & Live Map Tracking
+                </h2>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ${
+                  shippingStatus === "DELIVERED" 
+                    ? "bg-green-100 text-green-800"
+                    : shippingStatus === "OUT_FOR_DELIVERY"
+                    ? "bg-purple-100 text-purple-800"
+                    : shippingStatus === "IN_TRANSIT"
+                    ? "bg-blue-100 text-blue-800"
+                    : "bg-amber-100 text-amber-800"
+                }`}>
+                  {shippingStatus}
+                </span>
+              </div>
+
+              <a
+                href={`/tracking/${order.orderNumber}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black text-white hover:bg-gray-800 rounded text-[11px] font-semibold transition-colors w-fit"
+              >
+                <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                Buka Live Map Pelanggan
+                <ExternalLink className="w-3 h-3 text-gray-400" />
+              </a>
+            </div>
+
+            {shipmentMessage && (
+              <div className="p-3 bg-green-50 border border-green-200 text-green-800 rounded flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
+                <span>{shipmentMessage}</span>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-gray-600 font-semibold mb-1">
+                  Jasa Kirim / Ekspedisi
+                </label>
+                <select
+                  value={courier}
+                  onChange={(e) => setCourier(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded bg-white focus:outline-none focus:ring-1 focus:ring-black"
+                >
+                  <option value="JNE Express">JNE Express</option>
+                  <option value="J&T Express">J&T Express</option>
+                  <option value="SiCepat Ekspres">SiCepat Ekspres</option>
+                  <option value="Anteraja">Anteraja</option>
+                  <option value="Lion Parcel">Lion Parcel</option>
+                  <option value="POS Indonesia">POS Indonesia</option>
+                  <option value="ID Express">ID Express</option>
+                  <option value="Ninja Xpress">Ninja Xpress</option>
+                  <option value="Paxel">Paxel</option>
+                  <option value="GoSend">GoSend Instant/Sameday</option>
+                  <option value="GrabExpress">GrabExpress</option>
+                  <option value="Kurir Internal KALANA">Kurir Internal KALANA (Cikampek Van)</option>
+                  <option value="Ekspedisi Lainnya">Ekspedisi Lainnya</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-gray-600 font-semibold mb-1">
+                  Layanan Pengiriman
+                </label>
+                <input
+                  type="text"
+                  value={courierService}
+                  onChange={(e) => setCourierService(e.target.value)}
+                  placeholder="Contoh: Reguler / YES / Sameday / Kargo"
+                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-600 font-semibold mb-1">
+                  Nomor Resi / No. AWB
+                </label>
+                <input
+                  type="text"
+                  value={trackingNumber}
+                  onChange={(e) => setTrackingNumber(e.target.value)}
+                  placeholder="Contoh: JNE0192837465"
+                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-black font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-600 font-semibold mb-1">
+                  Status Pengiriman (Live Map)
+                </label>
+                <select
+                  value={shippingStatus}
+                  onChange={(e) => setShippingStatus(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded bg-white focus:outline-none focus:ring-1 focus:ring-black font-semibold"
+                >
+                  <option value="PENDING">PENDING - Pesanan Menunggu Diproses (0%)</option>
+                  <option value="PROCESSED">PROCESSED - Selesai Dikemas di Roastery (15%)</option>
+                  <option value="PICKED_UP">PICKED_UP - Paket Diserahkan ke Kurir (30%)</option>
+                  <option value="IN_TRANSIT">IN_TRANSIT - Mobil Bergerak Antarkota (65%)</option>
+                  <option value="OUT_FOR_DELIVERY">OUT_FOR_DELIVERY - Kurir Menuju Alamat (85%)</option>
+                  <option value="DELIVERED">DELIVERED - Paket Berhasil Diterima (100%)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-gray-600 font-semibold mb-1">
+                  Lokasi Terkini Mobil / Paket
+                </label>
+                <input
+                  type="text"
+                  value={currentLocation}
+                  onChange={(e) => setCurrentLocation(e.target.value)}
+                  placeholder="Contoh: KALANA Roastery (Cikampek) / Hub Transit..."
+                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-600 font-semibold mb-1">
+                  Estimasi Tiba
+                </label>
+                <input
+                  type="text"
+                  value={estimatedDeliveryDate}
+                  onChange={(e) => setEstimatedDeliveryDate(e.target.value)}
+                  placeholder="Contoh: 16 - 17 Oktober 2026"
+                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-gray-600 font-semibold mb-1">
+                  URL Lacak Ekspedisi (Opsional)
+                </label>
+                <input
+                  type="text"
+                  value={trackingUrl}
+                  onChange={(e) => setTrackingUrl(e.target.value)}
+                  placeholder="Biarkan kosong untuk auto-generate atau masukkan custom URL"
+                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-black font-mono text-[11px]"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-gray-600 font-semibold mb-1">
+                  Tambah Catatan Riwayat Baru (Milestone Log)
+                </label>
+                <input
+                  type="text"
+                  value={newTimelineNote}
+                  onChange={(e) => setNewTimelineNote(e.target.value)}
+                  placeholder="Contoh: Paket telah keluar dari Sortir Karawang dan menuju kota tujuan..."
+                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-3 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={handleSaveShipment}
+                disabled={isUpdatingShipment}
+                className="px-4 py-2.5 bg-black text-white hover:bg-gray-800 rounded font-semibold text-xs transition-colors flex items-center gap-2 shadow-sm"
+              >
+                {isUpdatingShipment ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Truck className="w-3.5 h-3.5" />
+                )}
+                Simpan & Update Live Tracking
+              </button>
+            </div>
+
+            {/* Riwayat Log Timeline */}
+            {(() => {
+              let historyList: any[] = [];
+              try {
+                if (typeof order.trackingHistory === "string") {
+                  historyList = JSON.parse(order.trackingHistory);
+                } else if (Array.isArray(order.trackingHistory)) {
+                  historyList = order.trackingHistory;
+                }
+              } catch (e) {
+                historyList = [];
+              }
+
+              if (historyList.length === 0) return null;
+
+              return (
+                <div className="pt-3 border-t border-gray-100 space-y-2">
+                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                    Riwayat Perjalanan Terakhir ({historyList.length})
+                  </h3>
+                  <div className="space-y-1.5 max-h-48 overflow-y-auto pr-2">
+                    {historyList.map((item, idx) => (
+                      <div key={item.id || idx} className="p-2 bg-gray-50 rounded border border-gray-100 flex items-start justify-between gap-3 text-[11px]">
+                        <div>
+                          <div className="font-semibold text-gray-900">{item.title}</div>
+                          {item.location && <div className="text-gray-500">📍 {item.location}</div>}
+                          {item.note && <div className="text-gray-600 mt-0.5 italic">{item.note}</div>}
+                        </div>
+                        <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                          {item.timestamp ? new Date(item.timestamp).toLocaleString("id-ID", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "-"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Payment Card */}

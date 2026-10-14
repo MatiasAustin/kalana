@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Package, ExternalLink, CreditCard } from "lucide-react";
+import { ArrowLeft, Package, ExternalLink, CreditCard, Truck, MapPin } from "lucide-react";
 import { db } from "@/lib/db";
 import { users, customers, orders, siteSettings } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
@@ -109,6 +109,15 @@ export default async function CustomerOrdersPage() {
                     }`}>
                       {order.fulfillmentStatus}
                     </span>
+
+                    {/* Live Tracking Map Button */}
+                    <Link
+                      href={`/tracking/${order.orderNumber}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 bg-stone-900 text-stone-100 hover:bg-stone-800 rounded-sm text-[10px] font-semibold tracking-widest uppercase transition-colors"
+                    >
+                      <Truck className="w-3 h-3 text-amber-400" />
+                      Lacak Peta Live
+                    </Link>
 
                     {/* Pay Button for Unpaid Orders */}
                     {isUnpaid && (

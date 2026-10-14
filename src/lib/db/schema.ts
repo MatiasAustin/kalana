@@ -163,6 +163,17 @@ export const orders = sqliteTable('orders', {
   paymentProvider: text('payment_provider'), // e.g., 'MAYAR', 'DOKU', 'MIDTRANS'
   paymentToken: text('payment_token'),
   paymentUrl: text('payment_url'),
+
+  // Shipment & Live Tracking
+  courier: text('courier'), // 'JNE', 'J&T Express', 'SiCepat', 'Anteraja', 'Lion Parcel', 'Pos Indonesia', 'GoSend', etc.
+  courierService: text('courier_service'), // 'Reguler', 'YES', 'Cargo', 'Same Day', 'Instant'
+  trackingNumber: text('tracking_number'), // Nomor Resi / AWB
+  trackingUrl: text('tracking_url'), // Link cek resi ekspedisi
+  shippingStatus: text('shipping_status').default('PENDING'), // 'PENDING', 'PROCESSED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'
+  currentLocation: text('current_location'), // e.g. "Roastery Cikampek", "Sorting Center Jakarta"
+  estimatedDeliveryDate: text('estimated_delivery_date'),
+  trackingHistory: text('tracking_history'), // JSON string array of { id, timestamp, status, title, location, note }
+
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
