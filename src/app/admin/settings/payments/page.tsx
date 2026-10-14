@@ -11,8 +11,10 @@ export default async function PaymentSettingsPage() {
   }).catch(() => null);
 
   const initialData = {
-    activePaymentGateway: settings?.activePaymentGateway || 'NONE',
+    activePaymentGateway: settings?.activePaymentGateway || 'MAYAR',
     mayarApiKey: settings?.mayarApiKey || '',
+    mayarPaymeUrl: settings?.mayarPaymeUrl || 'https://mayar.to/kalanaspaceroastery',
+    mayarCustomerPortalUrl: settings?.mayarCustomerPortalUrl || 'https://kalanaspaceroastery.myr.id/portal',
     dokuClientId: settings?.dokuClientId || '',
     dokuSecretKey: settings?.dokuSecretKey || '',
   };

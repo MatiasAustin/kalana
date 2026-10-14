@@ -100,5 +100,26 @@ export async function updatePrimaryLocation(data: any) {
   }
 }
 
-export async function updatePaymentSettings(data: { activePaymentGateway: string, mayarApiKey: string, dokuClientId: string, dokuSecretKey: string }) { try { await requireAdminApi(); await db.insert(siteSettings).values({ id: 'global', ...data }).onConflictDoUpdate({ target: siteSettings.id, set: data }); revalidatePath('/admin/settings/payments'); return { success: true }; } catch (error: any) { return { success: false, error: error.message }; } }
+export async function updatePaymentSettings(data: {
+  activePaymentGateway: string;
+  mayarApiKey?: string;
+  mayarPaymeUrl?: string;
+  mayarCustomerPortalUrl?: string;
+  dokuClientId?: string;
+  dokuSecretKey?: string;
+}) {
+  try {
+    await requireAdminApi();
+    await db
+      .insert(siteSettings)
+      .values({ id: 'global', ...data })
+      .onConflictDoUpdate({ target: siteSettings.id, set: data });
+    revalidatePath('/admin/settings/payments');
+    revalidatePath('/checkout');
+    revalidatePath('/account/orders');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
 

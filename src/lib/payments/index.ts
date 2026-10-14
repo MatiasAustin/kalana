@@ -16,7 +16,7 @@ export async function getPaymentGateway(): Promise<PaymentGatewayProvider | null
 
   switch (activeProvider.toUpperCase()) {
     case 'MAYAR':
-      return new MayarPaymentProvider(settings.mayarApiKey || '');
+      return new MayarPaymentProvider(settings.mayarApiKey || '', settings.mayarPaymeUrl || '');
     case 'DOKU':
       return new DokuPaymentProvider(settings.dokuClientId || '', settings.dokuSecretKey || '');
     case 'NONE':

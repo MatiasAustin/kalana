@@ -74,8 +74,7 @@ export default function CheckoutPage() {
         if (res.paymentUrl) {
           window.location.href = res.paymentUrl;
         } else {
-          alert(`Order placed successfully! Order Number: ${res.orderNumber}`);
-          router.push('/');
+          router.push(`/checkout/success?order=${res.orderNumber}`);
         }
       } else {
         alert(res.error);

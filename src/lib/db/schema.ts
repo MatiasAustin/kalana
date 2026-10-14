@@ -212,6 +212,8 @@ export const siteSettings = sqliteTable('site_settings', {
   // Payment Gateway Settings
   activePaymentGateway: text('active_payment_gateway').default('NONE'), // 'MAYAR', 'DOKU', 'NONE'
   mayarApiKey: text('mayar_api_key'),
+  mayarPaymeUrl: text('mayar_payme_url').default('https://mayar.to/kalanaspaceroastery'),
+  mayarCustomerPortalUrl: text('mayar_customer_portal_url').default('https://kalanaspaceroastery.myr.id/portal'),
   dokuClientId: text('doku_client_id'),
   dokuSecretKey: text('doku_secret_key'),
   

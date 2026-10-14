@@ -183,7 +183,12 @@ export async function processCheckout(
         paymentUrl: paymentResult.paymentUrl || `/checkout/success?order=${orderNumber}` 
       };
     } else {
-      return { success: true, orderId, orderNumber };
+      return { 
+        success: true, 
+        orderId, 
+        orderNumber,
+        paymentUrl: `/checkout/success?order=${orderNumber}`
+      };
     }
 
   } catch (error: any) {

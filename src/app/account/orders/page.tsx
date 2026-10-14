@@ -1,9 +1,9 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Package } from "lucide-react";
+import { ArrowLeft, Package, ExternalLink, CreditCard } from "lucide-react";
 import { db } from "@/lib/db";
-import { users, customers, orders, orderItems } from "@/lib/db/schema";
+import { users, customers, orders, siteSettings } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 
 export default async function CustomerOrdersPage() {
@@ -13,10 +13,18 @@ export default async function CustomerOrdersPage() {
     redirect("/login");
   }
 
-  // Find the customer internal ID
-  const internalUser = await db.query.users.findFirst({
-    where: eq(users.clerkUserId, userId)
-  });
+  // Find the customer internal ID & settings
+  const [internalUser, settings] = await Promise.all([
+    db.query.users.findFirst({
+      where: eq(users.clerkUserId, userId)
+    }),
+    db.query.siteSettings.findFirst({
+      where: eq(siteSettings.id, "global")
+    }).catch(() => null)
+  ]);
+
+  const mayarPaymeUrl = settings?.mayarPaymeUrl || "https://mayar.to/kalanaspaceroastery";
+  const customerPortalUrl = settings?.mayarCustomerPortalUrl || "https://kalanaspaceroastery.myr.id/portal";
 
   let customerOrders: any[] = [];
 
@@ -43,8 +51,22 @@ export default async function CustomerOrdersPage() {
         Back to Account
       </Link>
 
-      <h1 className="text-4xl font-semibold tracking-tighter uppercase mb-2">Order History</h1>
-      <p className="text-sm text-kalana-black/60 mb-12">View and track your past orders.</p>
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8">
+        <div>
+          <h1 className="text-4xl font-semibold tracking-tighter uppercase mb-2">Order History</h1>
+          <p className="text-sm text-kalana-black/60">View and track your past orders.</p>
+        </div>
+
+        {/* Mayar Customer Portal Button */}
+        <a
+          href={customerPortalUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-2 px-4 py-2.5 border border-kalana-black text-black hover:bg-black hover:text-white rounded-sm text-xs font-semibold tracking-widest uppercase transition-all shadow-sm self-start sm:self-auto"
+        >
+          Portal Pelanggan Mayar <ExternalLink className="w-3.5 h-3.5" />
+        </a>
+      </div>
 
       {customerOrders.length === 0 ? (
         <div className="border border-kalana-black/10 py-24 flex flex-col items-center justify-center text-center">
@@ -57,53 +79,72 @@ export default async function CustomerOrdersPage() {
         </div>
       ) : (
         <div className="space-y-8">
-          {customerOrders.map(order => (
-            <div key={order.id} className="border border-kalana-black/20 p-6 lg:p-8">
-              <div className="flex flex-col lg:flex-row justify-between lg:items-center border-b border-kalana-black/10 pb-6 mb-6 gap-6">
-                <div>
-                  <p className="text-[10px] tracking-widest uppercase text-kalana-black/50 mb-1">Order Number</p>
-                  <p className="font-medium tracking-wide">{order.orderNumber}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] tracking-widest uppercase text-kalana-black/50 mb-1">Date</p>
-                  <p className="font-medium tracking-wide">{order.createdAt ? new Date(order.createdAt).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }) : "-"}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] tracking-widest uppercase text-kalana-black/50 mb-1">Total</p>
-                  <p className="font-medium tracking-wide">IDR {order.total.toLocaleString('id-ID')}</p>
-                </div>
-                <div className="flex gap-4">
-                  <span className={`px-3 py-1 text-[10px] tracking-widest uppercase rounded-full ${
-                    order.paymentStatus === 'PAID' ? 'bg-green-100 text-green-800' : 'bg-kalana-black/10 text-kalana-black'
-                  }`}>
-                    {order.paymentStatus}
-                  </span>
-                  <span className={`px-3 py-1 text-[10px] tracking-widest uppercase rounded-full ${
-                    order.fulfillmentStatus === 'FULFILLED' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {order.fulfillmentStatus}
-                  </span>
-                </div>
-              </div>
+          {customerOrders.map(order => {
+            const isUnpaid = order.paymentStatus === 'UNPAID';
+            const payUrl = order.paymentUrl || mayarPaymeUrl;
 
-              <div className="space-y-4">
-                {order.items.map((item: any) => (
-                  <div key={item.id} className="flex justify-between items-center text-sm">
-                    <div className="flex items-center gap-4">
-                      <span className="font-medium text-kalana-black/60">{item.quantity}x</span>
-                      <div>
-                        <p className="font-medium">{item.productNameSnapshot}</p>
-                        <p className="text-[10px] tracking-widest uppercase text-kalana-black/50">{item.variantNameSnapshot}</p>
-                      </div>
-                    </div>
-                    <p className="font-medium">IDR {item.subtotal.toLocaleString('id-ID')}</p>
+            return (
+              <div key={order.id} className="border border-kalana-black/20 p-6 lg:p-8">
+                <div className="flex flex-col lg:flex-row justify-between lg:items-center border-b border-kalana-black/10 pb-6 mb-6 gap-6">
+                  <div>
+                    <p className="text-[10px] tracking-widest uppercase text-kalana-black/50 mb-1">Order Number</p>
+                    <p className="font-medium tracking-wide">{order.orderNumber}</p>
                   </div>
-                ))}
+                  <div>
+                    <p className="text-[10px] tracking-widest uppercase text-kalana-black/50 mb-1">Date</p>
+                    <p className="font-medium tracking-wide">{order.createdAt ? new Date(order.createdAt).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }) : "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] tracking-widest uppercase text-kalana-black/50 mb-1">Total</p>
+                    <p className="font-medium tracking-wide">IDR {order.total.toLocaleString('id-ID')}</p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className={`px-3 py-1 text-[10px] tracking-widest uppercase rounded-full ${
+                      order.paymentStatus === 'PAID' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {order.paymentStatus}
+                    </span>
+                    <span className={`px-3 py-1 text-[10px] tracking-widest uppercase rounded-full ${
+                      order.fulfillmentStatus === 'FULFILLED' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {order.fulfillmentStatus}
+                    </span>
+
+                    {/* Pay Button for Unpaid Orders */}
+                    {isUnpaid && (
+                      <a
+                        href={payUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 bg-black text-white hover:bg-gray-800 rounded-sm text-[10px] font-semibold tracking-widest uppercase transition-colors"
+                      >
+                        <CreditCard className="w-3 h-3" />
+                        Bayar via Mayar ↗
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {order.items.map((item: any) => (
+                    <div key={item.id} className="flex justify-between items-center text-sm">
+                      <div className="flex items-center gap-4">
+                        <span className="font-medium text-kalana-black/60">{item.quantity}x</span>
+                        <div>
+                          <p className="font-medium">{item.productNameSnapshot}</p>
+                          <p className="text-[10px] tracking-widest uppercase text-kalana-black/50">{item.variantNameSnapshot}</p>
+                        </div>
+                      </div>
+                      <p className="font-medium">IDR {item.subtotal.toLocaleString('id-ID')}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
   );
 }
+
