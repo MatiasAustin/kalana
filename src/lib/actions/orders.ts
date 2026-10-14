@@ -472,3 +472,67 @@ export async function deleteOrder(orderId: string) {
     return { success: false, error: error.message || "Failed to delete order" };
   }
 }
+
+export async function cancelOrderCustomer(orderNumber: string) {
+  try {
+    await ensureDbSchema();
+
+    const order = await db.query.orders.findFirst({
+      where: eq(orders.orderNumber, orderNumber),
+    });
+
+    if (!order) {
+      return { success: false, error: "Pesanan tidak ditemukan." };
+    }
+
+    if (order.status === "CANCELLED") {
+      return { success: false, error: "Pesanan ini sudah dibatalkan sebelumnya." };
+    }
+
+    if (
+      order.fulfillmentStatus === "FULFILLED" ||
+      ["PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED"].includes(order.shippingStatus || "")
+    ) {
+      return {
+        success: false,
+        error: "Pesanan sudah dalam proses pengiriman bersama kurir dan tidak dapat dibatalkan otomatis. Silakan hubungi customer support KALANA.",
+      };
+    }
+
+    let history: any[] = [];
+    if (order.trackingHistory) {
+      try {
+        history = JSON.parse(order.trackingHistory);
+      } catch {}
+    }
+
+    history.unshift({
+      id: uuidv4(),
+      timestamp: new Date().toISOString(),
+      status: "CANCELLED",
+      title: "Pesanan Dibatalkan",
+      location: "KALANA Roastery (Cikampek)",
+      note: "Pesanan telah dibatalkan atas permintaan pelanggan.",
+    });
+
+    await db.update(orders)
+      .set({
+        status: "CANCELLED",
+        shippingStatus: "CANCELLED",
+        trackingHistory: JSON.stringify(history),
+        updatedAt: new Date(),
+      })
+      .where(eq(orders.id, order.id));
+
+    revalidatePath(`/tracking/${orderNumber}`);
+    revalidatePath("/account/orders");
+    revalidatePath("/admin/orders");
+    revalidatePath(`/admin/orders/${order.id}`);
+    revalidatePath("/checkout/success");
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("[CANCEL_ORDER_CUSTOMER_ERROR]", error);
+    return { success: false, error: error.message || "Gagal membatalkan pesanan" };
+  }
+}

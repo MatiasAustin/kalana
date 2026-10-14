@@ -2,8 +2,9 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { orders, siteSettings } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { CheckCircle2, Clock, ExternalLink, ArrowRight, ShieldCheck, FileText, Truck, MapPin } from "lucide-react";
+import { CheckCircle2, Clock, ExternalLink, ArrowRight, ShieldCheck, FileText, Truck, MapPin, XCircle } from "lucide-react";
 import { CustomerTrackingShareCard } from "@/components/tracking/CustomerTrackingShareCard";
+import { CancelOrderButton } from "@/components/orders/CancelOrderButton";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +42,8 @@ export default async function CheckoutSuccessPage({ searchParams }: SuccessPageP
   const customerPortalUrl = settings?.mayarCustomerPortalUrl || "https://kalanaspaceroastery.myr.id/portal";
   const paymentTargetUrl = orderData?.paymentUrl || paymeUrl;
   const isPaid = orderData?.paymentStatus === "PAID";
+  const isCancelled = orderData?.status === "CANCELLED" || orderData?.shippingStatus === "CANCELLED";
+  const canCancel = orderData && !isCancelled && orderData?.fulfillmentStatus !== "FULFILLED" && !["PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED"].includes(orderData?.shippingStatus);
 
   return (
     <div className="min-h-screen bg-kalana-offwhite text-kalana-black pt-28 pb-24 px-6 lg:px-12">
@@ -52,17 +55,21 @@ export default async function CheckoutSuccessPage({ searchParams }: SuccessPageP
             kalana.
           </Link>
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-kalana-black text-kalana-offwhite mb-6">
-            {isPaid ? (
+            {isCancelled ? (
+              <XCircle className="w-8 h-8 text-red-400" />
+            ) : isPaid ? (
               <CheckCircle2 className="w-8 h-8 text-green-400" />
             ) : (
               <Clock className="w-8 h-8 text-yellow-400" />
             )}
           </div>
           <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight uppercase mb-3">
-            {isPaid ? "Payment Confirmed" : "Order Placed Successfully"}
+            {isCancelled ? "Order Cancelled" : isPaid ? "Payment Confirmed" : "Order Placed Successfully"}
           </h1>
           <p className="text-sm text-kalana-black/70 max-w-md mx-auto">
-            {isPaid
+            {isCancelled
+              ? "Pesanan Anda telah dibatalkan dan proses pesanan telah dihentikan."
+              : isPaid
               ? "Terima kasih! Pembayaran Anda telah terverifikasi dan pesanan sedang kami persiapkan."
               : "Pesanan Anda telah berhasil dibuat. Silakan selesaikan pembayaran melalui gerbang resmi Mayar."}
           </p>
@@ -83,17 +90,27 @@ export default async function CheckoutSuccessPage({ searchParams }: SuccessPageP
                 <span className="font-bold text-base text-kalana-black">IDR {orderData.total.toLocaleString("id-ID")}</span>
               </div>
               <div>
-                <span className="text-kalana-black/50 block text-[10px] uppercase tracking-widest">Status Pembayaran</span>
+                <span className="text-kalana-black/50 block text-[10px] uppercase tracking-widest">Status Pesanan</span>
                 <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase mt-1 ${
-                  isPaid ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                  isCancelled ? "bg-red-100 text-red-800" : isPaid ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
                 }`}>
-                  {orderData.paymentStatus}
+                  {isCancelled ? "DIBATALKAN" : orderData.paymentStatus}
                 </span>
               </div>
             </div>
 
+            {/* Cancelled Alert Banner */}
+            {isCancelled && (
+              <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-sm text-xs space-y-1">
+                <span className="font-bold uppercase tracking-wider block">Pesanan Telah Dibatalkan</span>
+                <p className="text-red-700/90 leading-relaxed">
+                  Pesanan #{orderData.orderNumber} telah dibatalkan dan tidak lagi diproses. Jika Anda memiliki pertanyaan atau kendala pembayaran, silakan hubungi customer support KALANA.
+                </p>
+              </div>
+            )}
+
             {/* Payment Action Buttons */}
-            {!isPaid && (
+            {!isPaid && !isCancelled && (
               <div className="bg-kalana-black text-kalana-offwhite p-6 rounded-sm space-y-4">
                 <div className="flex items-start gap-3">
                   <ShieldCheck className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
@@ -184,6 +201,16 @@ export default async function CheckoutSuccessPage({ searchParams }: SuccessPageP
                 Portal Pelanggan <ExternalLink className="w-3 h-3" />
               </a>
             </div>
+
+            {/* Cancel Order Option if allowed */}
+            {canCancel && (
+              <div className="pt-4 border-t border-kalana-black/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                <p className="text-gray-500 text-[11px]">
+                  Salah pesan atau ingin mengubah pesanan? Anda dapat membatalkan pesanan selama belum disangrai / dikirim.
+                </p>
+                <CancelOrderButton orderNumber={orderData.orderNumber} variant="outline" />
+              </div>
+            )}
 
           </div>
         ) : (

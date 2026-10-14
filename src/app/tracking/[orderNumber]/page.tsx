@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getShipmentTracking } from "@/lib/actions/orders";
 import { LiveShipmentMap } from "@/components/tracking/LiveShipmentMap";
 import { ShipmentTimeline } from "@/components/tracking/ShipmentTimeline";
+import { CancelOrderButton } from "@/components/orders/CancelOrderButton";
 import { ArrowLeft, Package, Coffee, HelpCircle, ExternalLink } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -193,6 +194,27 @@ export default async function TrackingDetailPage({
               <span className="font-bold font-mono text-[10px] uppercase block mb-0.5">Roastery Fresh Guarantee</span>
               Biji kopi disangrai segar dan dikemas dengan katup degassing satu arah untuk menjaga aroma & crema optimal hingga tiba di tempat Anda.
             </div>
+
+            {/* Order Cancellation (Available for Guests & Members) */}
+            {trackingData.status === "CANCELLED" ? (
+              <div className="p-3 bg-red-50 border border-red-200 rounded text-center">
+                <span className="font-bold text-xs uppercase tracking-wider text-red-700 block font-mono">
+                  Pesanan Dibatalkan
+                </span>
+                <span className="text-[10px] text-red-600 block mt-0.5 font-sans">
+                  Pesanan ini telah dibatalkan dan tidak ditagihkan/dikirimkan.
+                </span>
+              </div>
+            ) : (
+              trackingData.fulfillmentStatus !== "FULFILLED" && ["PENDING", "PROCESSED"].includes(trackingData.shippingStatus) && (
+                <div className="pt-2 border-t border-gray-100 flex flex-col items-center gap-1.5">
+                  <CancelOrderButton orderNumber={trackingData.orderNumber} variant="outline" className="w-full text-center py-2" />
+                  <span className="text-[10px] text-gray-400 text-center font-sans">
+                    Pesanan dapat dibatalkan selama belum diserahkan ke kurir.
+                  </span>
+                </div>
+              )
+            )}
           </div>
         </section>
 

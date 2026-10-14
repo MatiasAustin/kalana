@@ -5,6 +5,7 @@ import { ArrowLeft, Package, ExternalLink, CreditCard, Truck, MapPin } from "luc
 import { db } from "@/lib/db";
 import { users, customers, orders, siteSettings } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
+import { CancelOrderButton } from "@/components/orders/CancelOrderButton";
 
 export default async function CustomerOrdersPage() {
   const { userId } = await auth();
@@ -120,7 +121,7 @@ export default async function CustomerOrdersPage() {
                     </Link>
 
                     {/* Pay Button for Unpaid Orders */}
-                    {isUnpaid && (
+                    {isUnpaid && order.status !== 'CANCELLED' && (
                       <a
                         href={payUrl}
                         target="_blank"
@@ -130,6 +131,17 @@ export default async function CustomerOrdersPage() {
                         <CreditCard className="w-3 h-3" />
                         Bayar via Mayar ↗
                       </a>
+                    )}
+
+                    {/* Cancel Order Button */}
+                    {order.status === 'CANCELLED' ? (
+                      <span className="px-3 py-1 text-[10px] tracking-widest uppercase rounded-full bg-red-100 text-red-800 font-semibold">
+                        Dibatalkan
+                      </span>
+                    ) : (
+                      order.fulfillmentStatus !== 'FULFILLED' && (
+                        <CancelOrderButton orderNumber={order.orderNumber} variant="outline" />
+                      )
                     )}
                   </div>
                 </div>
