@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, ExternalLink, Plus, Trash2, FileText, CheckCircle2 } from "lucide-react";
+import { Loader2, ExternalLink, Plus, Trash2, FileText, CheckCircle2, ChevronUp, ChevronDown } from "lucide-react";
 import { savePageContent, deletePage } from "@/lib/actions/pages";
 import { useRouter } from "next/navigation";
 import { ImageUploadField } from "./ImageUploadField";
@@ -23,7 +23,7 @@ const STANDARD_PAGE_TABS = [
   { slug: "goods", title: "Goods Page", path: "/goods", icon: "🎒" },
   { slug: "terms", title: "Terms & Conditions", path: "/terms", icon: "📜" },
   { slug: "privacy", title: "Privacy Policy", path: "/privacy", icon: "🔒" },
-  { slug: "shipping", title: "Shipping & Returns", path: "/shipping", icon: "🚚" },
+  { slug: "shipping", title: "Shipping & Returns", path: "/shipping", icon: "📦" },
 ];
 
 export function PagesEditor({ 
@@ -47,6 +47,129 @@ export function PagesEditor({
   const currentPage = pagesState[activeSlug] || {};
   const isCustomPage = !STANDARD_PAGE_TABS.some(t => t.slug === activeSlug);
 
+  const roasteryData = pagesState["roastery"] || {};
+  const roasterySections = Array.isArray(roasteryData.collectionSections) && roasteryData.collectionSections.length > 0
+    ? roasteryData.collectionSections
+    : [
+        {
+          id: "section-1",
+          badge: roasteryData.collectionBadge || "Collection / 01",
+          title: roasteryData.collectionTitle || "Daily Series.",
+          description: roasteryData.collectionDesc || "Everyday blends designed for consistency, versatility, and easy drinking. Built to perform across espresso, americano, and milk-based coffee.",
+          displayMode: roasteryData.collectionDisplayMode || "all",
+          collectionId: roasteryData.collectionId || "",
+          productIds: Array.isArray(roasteryData.productIds) ? roasteryData.productIds : [],
+          productLimit: roasteryData.productLimit !== undefined ? roasteryData.productLimit : 0,
+        }
+      ];
+
+  const handleUpdateRoasterySection = (index: number, updatedFields: Record<string, any>) => {
+    const nextSections = [...roasterySections];
+    nextSections[index] = { ...nextSections[index], ...updatedFields };
+
+    const legacySync = index === 0 ? {
+      collectionBadge: nextSections[0].badge,
+      collectionTitle: nextSections[0].title,
+      collectionDesc: nextSections[0].description,
+      collectionDisplayMode: nextSections[0].displayMode,
+      collectionId: nextSections[0].collectionId,
+      productIds: nextSections[0].productIds,
+      productLimit: nextSections[0].productLimit,
+    } : {};
+
+    setPagesState((prev) => ({
+      ...prev,
+      roastery: {
+        ...prev.roastery,
+        ...legacySync,
+        collectionSections: nextSections,
+      }
+    }));
+  };
+
+  const handleAddRoasterySection = () => {
+    const nextNum = roasterySections.length + 1;
+    const pad = nextNum.toString().padStart(2, "0");
+    const newSection = {
+      id: `section-${Date.now()}`,
+      badge: `Collection / ${pad}`,
+      title: nextNum === 2 ? "Terra Series." : `Series ${pad}.`,
+      description: nextNum === 2 
+        ? "Complex single origins, terroir-driven coffee lots showcasing unique regional profiles."
+        : "Carefully curated lots, experimental processing, and distinctive roasting profiles.",
+      displayMode: "all",
+      collectionId: "",
+      productIds: [],
+      productLimit: 0,
+    };
+    const nextSections = [...roasterySections, newSection];
+    setPagesState((prev) => ({
+      ...prev,
+      roastery: {
+        ...prev.roastery,
+        collectionSections: nextSections,
+      }
+    }));
+  };
+
+  const handleRemoveRoasterySection = (index: number) => {
+    if (roasterySections.length <= 1) {
+      alert("Halaman Roastery minimal harus memiliki 1 section koleksi.");
+      return;
+    }
+    const targetTitle = roasterySections[index].title || roasterySections[index].badge || `Collection ${index + 1}`;
+    if (!confirm(`Hapus section "${targetTitle}"?`)) return;
+
+    const nextSections = roasterySections.filter((_: any, i: number) => i !== index);
+
+    const legacySync = nextSections[0] ? {
+      collectionBadge: nextSections[0].badge,
+      collectionTitle: nextSections[0].title,
+      collectionDesc: nextSections[0].description,
+      collectionDisplayMode: nextSections[0].displayMode,
+      collectionId: nextSections[0].collectionId,
+      productIds: nextSections[0].productIds,
+      productLimit: nextSections[0].productLimit,
+    } : {};
+
+    setPagesState((prev) => ({
+      ...prev,
+      roastery: {
+        ...prev.roastery,
+        ...legacySync,
+        collectionSections: nextSections,
+      }
+    }));
+  };
+
+  const handleMoveRoasterySection = (index: number, direction: "up" | "down") => {
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= roasterySections.length) return;
+
+    const nextSections = [...roasterySections];
+    const [moved] = nextSections.splice(index, 1);
+    nextSections.splice(newIndex, 0, moved);
+
+    const legacySync = {
+      collectionBadge: nextSections[0].badge,
+      collectionTitle: nextSections[0].title,
+      collectionDesc: nextSections[0].description,
+      collectionDisplayMode: nextSections[0].displayMode,
+      collectionId: nextSections[0].collectionId,
+      productIds: nextSections[0].productIds,
+      productLimit: nextSections[0].productLimit,
+    };
+
+    setPagesState((prev) => ({
+      ...prev,
+      roastery: {
+        ...prev.roastery,
+        ...legacySync,
+        collectionSections: nextSections,
+      }
+    }));
+  };
+
   const handleUpdateField = (key: string, value: any) => {
     setPagesState({
       ...pagesState,
@@ -63,8 +186,22 @@ export function PagesEditor({
 
     const title = currentPage.pageTitle || currentPage.title || activeSlug.toUpperCase();
 
+    const dataToSave = activeSlug === "roastery"
+      ? {
+          ...currentPage,
+          collectionSections: roasterySections,
+          collectionBadge: roasterySections[0]?.badge || currentPage.collectionBadge,
+          collectionTitle: roasterySections[0]?.title || currentPage.collectionTitle,
+          collectionDesc: roasterySections[0]?.description || currentPage.collectionDesc,
+          collectionDisplayMode: roasterySections[0]?.displayMode || currentPage.collectionDisplayMode || "all",
+          collectionId: roasterySections[0]?.collectionId || currentPage.collectionId || "",
+          productIds: roasterySections[0]?.productIds || currentPage.productIds || [],
+          productLimit: roasterySections[0]?.productLimit !== undefined ? roasterySections[0].productLimit : (currentPage.productLimit ?? 0),
+        }
+      : currentPage;
+
     try {
-      const res = await savePageContent(activeSlug, title, currentPage);
+      const res = await savePageContent(activeSlug, title, dataToSave);
       if (res.success) {
         setStatusMessage({ type: "success", text: `Page "${title}" saved successfully!` });
         router.refresh();
@@ -446,43 +583,153 @@ export function PagesEditor({
                   helperText="Primary architectural or roasting craft photo for the roastery page header"
                 />
 
-                <div className="pt-4 border-t border-gray-200 space-y-4">
-                  <h3 className="font-bold text-gray-900 uppercase">Featured Collection Info</h3>
-                  <div>
-                    <label className="block font-semibold text-gray-700 uppercase mb-1">Collection Title</label>
-                    <input
-                      type="text"
-                      value={currentPage.collectionTitle || ""}
-                      onChange={(e) => handleUpdateField("collectionTitle", e.target.value)}
-                      placeholder="Daily Series."
-                      className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-black outline-none font-mono"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-semibold text-gray-700 uppercase mb-1">Collection Description</label>
-                    <textarea
-                      rows={2}
-                      value={currentPage.collectionDesc || ""}
-                      onChange={(e) => handleUpdateField("collectionDesc", e.target.value)}
-                      placeholder="Everyday blends designed for consistency, versatility, and easy drinking..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-black outline-none font-sans"
-                    />
+                {/* Dynamic Collection Sections Manager */}
+                <div className="pt-6 border-t border-gray-200 space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <div>
+                      <h3 className="font-bold text-gray-900 uppercase flex items-center gap-2 text-sm">
+                        <span>📦</span> Collection Sections ({roasterySections.length} Section Terdaftar)
+                      </h3>
+                      <p className="text-gray-500 text-[11px] mt-0.5">
+                        Kelola section produk pada halaman Roastery. Anda bisa mengatur Collection 01 untuk Daily Series, Collection 02 untuk Terra Series, dst.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAddRoasterySection}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 bg-black text-white hover:bg-gray-800 rounded text-xs font-semibold uppercase tracking-wider transition-colors shrink-0 shadow-sm"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Tambah Section Baru (Collection 0{roasterySections.length + 1})
+                    </button>
                   </div>
 
-                  <ProductSectionFilter
-                    title="Filter Produk Koleksi Utama (Halaman Roastery)"
-                    description="Pilih kategori atau centang produk spesifik (misal: Daily House) agar produk lain seperti Terra Series tidak ikut tampil di section ini."
-                    collections={allCollections}
-                    allProducts={allProducts}
-                    displayMode={currentPage.collectionDisplayMode || "all"}
-                    collectionId={currentPage.collectionId || ""}
-                    productIds={currentPage.productIds || []}
-                    productLimit={currentPage.productLimit ?? 0}
-                    onChangeDisplayMode={(mode) => handleUpdateField("collectionDisplayMode", mode)}
-                    onChangeCollectionId={(colId) => handleUpdateField("collectionId", colId)}
-                    onChangeProductIds={(pIds) => handleUpdateField("productIds", pIds)}
-                    onChangeProductLimit={(limit) => handleUpdateField("productLimit", limit)}
-                  />
+                  <div className="space-y-6">
+                    {roasterySections.map((sec: any, idx: number) => (
+                      <div
+                        key={sec.id || `roastery-sec-${idx}`}
+                        className="p-5 border-2 border-gray-200 rounded-xl bg-white shadow-sm space-y-4 relative"
+                      >
+                        {/* Section Header Bar */}
+                        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-[10px] font-bold">
+                              {idx + 1}
+                            </span>
+                            <span className="font-bold text-gray-900 text-sm font-mono">
+                              {sec.badge || `Collection / ${(idx + 1).toString().padStart(2, "0")}`}
+                            </span>
+                            <span className="text-gray-400 font-sans text-xs">•</span>
+                            <span className="text-xs font-semibold text-gray-700">
+                              {sec.title || "Untitled Collection"}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            {idx > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => handleMoveRoasterySection(idx, "up")}
+                                title="Pindahkan Ke Atas"
+                                className="p-1 text-gray-400 hover:text-black hover:bg-gray-100 rounded"
+                              >
+                                <ChevronUp className="w-4 h-4" />
+                              </button>
+                            )}
+                            {idx < roasterySections.length - 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleMoveRoasterySection(idx, "down")}
+                                title="Pindahkan Ke Bawah"
+                                className="p-1 text-gray-400 hover:text-black hover:bg-gray-100 rounded"
+                              >
+                                <ChevronDown className="w-4 h-4" />
+                              </button>
+                            )}
+                            {roasterySections.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveRoasterySection(idx)}
+                                title="Hapus Section"
+                                className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded ml-2"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Title & Badge */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div>
+                            <label className="block font-semibold text-gray-700 uppercase mb-1 text-[11px]">
+                              Badge / Nomor Section
+                            </label>
+                            <input
+                              type="text"
+                              value={sec.badge || ""}
+                              onChange={(e) => handleUpdateRoasterySection(idx, { badge: e.target.value })}
+                              placeholder={`Collection / ${(idx + 1).toString().padStart(2, "0")}`}
+                              className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-black outline-none font-mono text-xs"
+                            />
+                          </div>
+                          <div className="sm:col-span-2">
+                            <label className="block font-semibold text-gray-700 uppercase mb-1 text-[11px]">
+                              Judul Koleksi (Headline)
+                            </label>
+                            <input
+                              type="text"
+                              value={sec.title || ""}
+                              onChange={(e) => handleUpdateRoasterySection(idx, { title: e.target.value })}
+                              placeholder={idx === 0 ? "Daily Series." : idx === 1 ? "Terra Series." : `Series ${(idx + 1).toString().padStart(2, "0")}.`}
+                              className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-black outline-none font-mono text-xs font-bold"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Description */}
+                        <div>
+                          <label className="block font-semibold text-gray-700 uppercase mb-1 text-[11px]">
+                            Deskripsi Koleksi
+                          </label>
+                          <textarea
+                            rows={2}
+                            value={sec.description || ""}
+                            onChange={(e) => handleUpdateRoasterySection(idx, { description: e.target.value })}
+                            placeholder="Deskripsi singkat mengenai karakteristik kopi pada koleksi ini..."
+                            className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-black outline-none font-sans text-xs"
+                          />
+                        </div>
+
+                        {/* Product Section Filter Embedded */}
+                        <ProductSectionFilter
+                          title={`Filter Produk: ${sec.badge || `Collection 0${idx + 1}`}`}
+                          description="Pilih kategori koleksi atau pilih manual produk untuk ditampilkan di section ini."
+                          collections={allCollections}
+                          allProducts={allProducts}
+                          displayMode={sec.displayMode || "all"}
+                          collectionId={sec.collectionId || ""}
+                          productIds={sec.productIds || []}
+                          productLimit={sec.productLimit ?? 0}
+                          onChangeDisplayMode={(mode) => handleUpdateRoasterySection(idx, { displayMode: mode })}
+                          onChangeCollectionId={(colId) => handleUpdateRoasterySection(idx, { collectionId: colId })}
+                          onChangeProductIds={(pIds) => handleUpdateRoasterySection(idx, { productIds: pIds })}
+                          onChangeProductLimit={(limit) => handleUpdateRoasterySection(idx, { productLimit: limit })}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex justify-center pt-2">
+                    <button
+                      type="button"
+                      onClick={handleAddRoasterySection}
+                      className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-gray-300 hover:border-black text-gray-700 hover:text-black rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Tambah Section Koleksi Baru (Collection 0{roasterySections.length + 1})
+                    </button>
+                  </div>
                 </div>
 
                 <div className="pt-4 border-t border-gray-200 space-y-4">

@@ -301,14 +301,32 @@ export function getDefaultPageContent(slug: string): any {
   }
 
   if (slug === 'roastery') {
+    const defaultSections = [
+      {
+        id: "section-1",
+        badge: "Collection / 01",
+        title: "Daily Series.",
+        description: "Everyday blends designed for consistency, versatility, and easy drinking. Built to perform across espresso, americano, and milk-based coffee.",
+        displayMode: "all",
+        collectionId: "",
+        productIds: [],
+        productLimit: 0,
+      }
+    ];
+
     return {
       eyebrow: "02 / Roastery",
       headline: "Coffee<br/>For Everyday<br/>Rituals.",
       description: "Produced in small batches. Designed for consistency, clarity, and daily enjoyment.",
       heroImage: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=1600&auto=format&fit=crop",
+      collectionSections: defaultSections,
       collectionBadge: "Collection / 01",
       collectionTitle: "Daily Series.",
       collectionDesc: "Everyday blends designed for consistency, versatility, and easy drinking. Built to perform across espresso, americano, and milk-based coffee.",
+      collectionDisplayMode: "all",
+      collectionId: "",
+      productIds: [],
+      productLimit: 0,
       // Roasting Craft & Workshop Documentation
       roastingDocBadge: "Archive / 02",
       roastingDocTitle: "The Roasting Craft & Workshop Archive.",
@@ -384,7 +402,26 @@ export async function getPageContent(slug: string) {
 
     if (page && page.data) {
       const parsed = typeof page.data === 'string' ? JSON.parse(page.data) : page.data;
-      return normalizeDeep({ ...getDefaultPageContent(slug), ...parsed, pageTitle: page.title });
+      const defaultData = getDefaultPageContent(slug);
+
+      if (slug === 'roastery') {
+        if (!parsed.collectionSections || !Array.isArray(parsed.collectionSections) || parsed.collectionSections.length === 0) {
+          parsed.collectionSections = [
+            {
+              id: "section-1",
+              badge: parsed.collectionBadge || defaultData.collectionBadge || "Collection / 01",
+              title: parsed.collectionTitle || defaultData.collectionTitle || "Daily Series.",
+              description: parsed.collectionDesc || defaultData.collectionDesc || "Everyday blends designed for consistency, versatility, and easy drinking. Built to perform across espresso, americano, and milk-based coffee.",
+              displayMode: parsed.collectionDisplayMode || "all",
+              collectionId: parsed.collectionId || "",
+              productIds: Array.isArray(parsed.productIds) ? parsed.productIds : [],
+              productLimit: parsed.productLimit !== undefined ? parsed.productLimit : 0,
+            }
+          ];
+        }
+      }
+
+      return normalizeDeep({ ...defaultData, ...parsed, pageTitle: page.title });
     }
   } catch (err) {
     console.warn(`[GET_PAGE_CONTENT_FALLBACK] ${slug}`);

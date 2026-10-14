@@ -36,31 +36,35 @@ export default async function RoasteryPage() {
     getPageContent("roastery")
   ]);
 
-  const displayConfig = {
-    displayMode: page.collectionDisplayMode,
-    collectionId: page.collectionId,
-    productIds: page.productIds,
-    productLimit: page.productLimit,
-  };
+  // Load collection sections from CMS data
+  const rawSections: any[] = Array.isArray(page.collectionSections) && page.collectionSections.length > 0
+    ? page.collectionSections
+    : [
+        {
+          id: "section-1",
+          badge: page.collectionBadge || "Collection / 01",
+          title: page.collectionTitle || "Daily Series.",
+          description: page.collectionDesc || "Everyday blends designed for consistency, versatility, and easy drinking. Built to perform across espresso, americano, and milk-based coffee.",
+          displayMode: page.collectionDisplayMode || "all",
+          collectionId: page.collectionId || "",
+          productIds: Array.isArray(page.productIds) ? page.productIds : [],
+          productLimit: page.productLimit !== undefined ? page.productLimit : 0,
+        }
+      ];
 
-  let featuredProducts = filterProductsForDisplay(allProducts as any, displayConfig);
+  const shownProductIds = new Set<string>();
+  const collectionSections = rawSections.map((sec: any) => {
+    const prods = filterProductsForDisplay(allProducts as any, sec);
+    prods.forEach((p: any) => shownProductIds.add(p.id));
+    return {
+      ...sec,
+      products: prods,
+    };
+  });
 
-  // If no filter is set in CMS, default to Daily Series / Daily House for first launch
-  if (
-    featuredProducts.length === 0 ||
-    (!page.collectionDisplayMode && !page.collectionId && !page.productIds)
-  ) {
-    const dailyOnly = allProducts.filter((p: any) => 
-      p.name?.toLowerCase().includes("daily") || p.slug?.toLowerCase().includes("daily")
-    );
-    if (dailyOnly.length > 0) {
-      featuredProducts = dailyOnly;
-    }
-  }
-
-  // Any other active products (e.g. Terra Series) that are not in the primary featured collection
+  // Any other active products (e.g. Terra Series) that are not in any collection section
   const otherProducts = allProducts.filter(
-    (p: any) => !featuredProducts.some((fp: any) => fp.id === p.id)
+    (p: any) => !shownProductIds.has(p.id)
   );
 
   return (
@@ -106,75 +110,125 @@ export default async function RoasteryPage() {
         </div>
       </section>
 
-      {/* Featured Collection: Daily Series */}
-      <section className="py-24 px-6 lg:px-12 border-b border-kalana-black/20 relative">
-        <div className="absolute top-1/2 left-6 -translate-y-1/2 vertical-text text-[10px] tracking-[0.2em] uppercase text-kalana-black/30 hidden lg:block rotate-180">
-          Featured Collection
-        </div>
+      {/* Dynamic Collection Sections (Collection 01, Collection 02, dst) */}
+      {collectionSections.map((section: any, secIdx: number) => {
+        const secProducts = section.products || [];
+        const isOddSection = secIdx % 2 !== 0;
 
-        <div className="container mx-auto">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-24 gap-12">
-            <div>
-              <p className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 mb-4">
-                {page.collectionBadge || "Collection / 01"}
-              </p>
-              <h2 className="text-5xl md:text-7xl font-semibold tracking-tight uppercase leading-none">
-                {page.collectionTitle || "Daily Series."}
-              </h2>
+        return (
+          <section
+            key={section.id || `collection-section-${secIdx}`}
+            className={`py-24 px-6 lg:px-12 border-b border-kalana-black/20 relative ${
+              isOddSection ? "bg-kalana-black/[0.015]" : ""
+            }`}
+          >
+            <div className="absolute top-1/2 left-6 -translate-y-1/2 vertical-text text-[10px] tracking-[0.2em] uppercase text-kalana-black/30 hidden lg:block rotate-180">
+              {section.badge || `Collection / ${(secIdx + 1).toString().padStart(2, "0")}`}
             </div>
-            <p className="text-sm tracking-wide max-w-sm text-kalana-black/70">
-              {page.collectionDesc || "Everyday blends designed for consistency, versatility, and easy drinking. Built to perform across espresso, americano, and milk-based coffee."}
-            </p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 lg:gap-32 border-t border-kalana-black/20 pt-16">
-            
-            {featuredProducts.map((product: any, idx: number) => {
-              const primaryMedia = product.media.find((m: any) => m.isPrimary)?.media || product.media[0]?.media;
-              const firstVariant = product.variants[0];
-              const price = firstVariant ? firstVariant.price : 0;
-              const isEven = idx % 2 !== 0; // Stagger every second item
-
-              return (
-                <div key={product.id} className={`group flex flex-col relative ${isEven ? 'lg:mt-32' : ''}`}>
-                  <span className="absolute -top-8 text-[10px] tracking-[0.2em] text-kalana-black/40">Product / {(idx + 1).toString().padStart(3, '0')}</span>
-                  <Link href={`/product/${product.slug}`} className="block w-full aspect-[4/5] bg-kalana-black/5 border border-kalana-black/10 mb-8 overflow-hidden relative">
-                    {primaryMedia ? (
-                      <img src={primaryMedia.url} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                    ) : (
-                      <div className="absolute inset-0 bg-kalana-black/10 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    )}
-                  </Link>
-                  
-                  <div className="flex flex-col flex-grow">
-                    <div className="flex justify-between items-start mb-4">
-                      <Link href={`/product/${product.slug}`}>
-                        <h4 className="text-2xl font-semibold uppercase tracking-wide group-hover:opacity-50 transition-opacity">{product.name}</h4>
-                      </Link>
-                      <p className="text-sm font-medium">IDR {price.toLocaleString('id-ID')}</p>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px] tracking-widest uppercase text-kalana-black/60 border-y border-kalana-black/10 py-4 mb-6">
-                      <span>{product.blend || '-'}</span>
-                      <span>{product.roast || '-'}</span>
-                      <span className="col-span-2 mt-2">{product.tastingNotes || '-'}</span>
-                    </div>
-                    
-                    <div className="flex gap-4 mt-auto">
-                      <Link href={`/product/${product.slug}`} className="w-full py-3 bg-kalana-black border border-kalana-black text-kalana-offwhite text-center text-[10px] font-semibold tracking-[0.2em] uppercase hover:bg-kalana-black/80 transition-colors">
-                        View Product
-                      </Link>
-                    </div>
-                  </div>
+            <div className="container mx-auto">
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-20 gap-10">
+                <div>
+                  <p className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 mb-4 font-mono">
+                    {section.badge || `Collection / ${(secIdx + 1).toString().padStart(2, "0")}`}
+                  </p>
+                  <h2 className="text-4xl sm:text-5xl md:text-7xl font-semibold tracking-tight uppercase leading-none">
+                    {section.title || (secIdx === 0 ? "Daily Series." : `Series ${(secIdx + 1).toString().padStart(2, "0")}.`)}
+                  </h2>
                 </div>
-              );
-            })}
-            
-          </div>
-        </div>
-      </section>
+                {section.description && (
+                  <p className="text-sm tracking-wide max-w-md text-kalana-black/70 leading-relaxed">
+                    {section.description}
+                  </p>
+                )}
+              </div>
 
-      {/* Additional / Other Series (e.g. Terra Series) - Separated cleanly from Featured Collection */}
+              {secProducts.length > 0 ? (
+                <div
+                  className={`grid grid-cols-1 ${
+                    secProducts.length === 2
+                      ? "md:grid-cols-2 gap-16 lg:gap-32"
+                      : secProducts.length >= 3
+                      ? "md:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-14"
+                      : "max-w-md mx-auto gap-12"
+                  } border-t border-kalana-black/20 pt-16`}
+                >
+                  {secProducts.map((product: any, idx: number) => {
+                    const primaryMedia =
+                      product.media?.find((m: any) => m.isPrimary)?.media ||
+                      product.media?.[0]?.media;
+                    const firstVariant = product.variants?.[0];
+                    const price = firstVariant ? firstVariant.price : 0;
+                    // Stagger only when exactly 2 products in 2-column layout
+                    const shouldStagger = secProducts.length === 2 && idx % 2 !== 0;
+
+                    return (
+                      <div
+                        key={product.id}
+                        className={`group flex flex-col relative ${
+                          shouldStagger ? "lg:mt-32" : ""
+                        }`}
+                      >
+                        <span className="absolute -top-8 text-[10px] tracking-[0.2em] text-kalana-black/40 font-mono">
+                          Product / {(idx + 1).toString().padStart(3, "0")}
+                        </span>
+                        <Link
+                          href={`/product/${product.slug}`}
+                          className="block w-full aspect-[4/5] bg-kalana-black/5 border border-kalana-black/10 mb-8 overflow-hidden relative"
+                        >
+                          {primaryMedia ? (
+                            <img
+                              src={primaryMedia.url}
+                              alt={product.name}
+                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 bg-kalana-black/10 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                          )}
+                        </Link>
+
+                        <div className="flex flex-col flex-grow">
+                          <div className="flex justify-between items-start mb-4 gap-2">
+                            <Link href={`/product/${product.slug}`}>
+                              <h4 className="text-xl sm:text-2xl font-semibold uppercase tracking-wide group-hover:opacity-50 transition-opacity">
+                                {product.name}
+                              </h4>
+                            </Link>
+                            <p className="text-sm font-medium whitespace-nowrap">
+                              IDR {price.toLocaleString("id-ID")}
+                            </p>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px] tracking-widest uppercase text-kalana-black/60 border-y border-kalana-black/10 py-4 mb-6">
+                            <span>{product.blend || "-"}</span>
+                            <span>{product.roast || "-"}</span>
+                            <span className="col-span-2 mt-2">{product.tastingNotes || "-"}</span>
+                          </div>
+
+                          <div className="flex gap-4 mt-auto">
+                            <Link
+                              href={`/product/${product.slug}`}
+                              className="w-full py-3 bg-kalana-black border border-kalana-black text-kalana-offwhite text-center text-[10px] font-semibold tracking-[0.2em] uppercase hover:bg-kalana-black/80 transition-colors"
+                            >
+                              View Product
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="border border-dashed border-kalana-black/20 py-12 text-center text-xs text-kalana-black/40 uppercase tracking-widest">
+                  Belum ada produk aktif untuk koleksi ini.
+                </div>
+              )}
+            </div>
+          </section>
+        );
+      })}
+
+      {/* Additional / Other Series - Only if not shown in any of the collection sections above */}
       {otherProducts.length > 0 && (
         <section className="py-24 px-6 lg:px-12 border-b border-kalana-black/20 bg-kalana-black/[0.01]">
           <div className="container mx-auto">
