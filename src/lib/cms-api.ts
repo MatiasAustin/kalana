@@ -97,6 +97,10 @@ export async function getHomepage() {
           description: data.description || data.subtext || formatted.featuredCollection.description,
           ctaLabel: data.ctaLabel || formatted.featuredCollection.ctaLabel,
           ctaUrl: data.ctaUrl || formatted.featuredCollection.ctaUrl,
+          displayMode: data.displayMode || "all",
+          collectionId: data.collectionId || "",
+          productIds: Array.isArray(data.productIds) ? data.productIds : [],
+          productLimit: data.productLimit !== undefined ? data.productLimit : 2,
         };
       } else if (sec.type === 'BRAND_STORY') {
         formatted.brandStory = {

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getHomepage, getLocation } from "@/lib/cms-api";
 import { NewsletterForm } from "@/components/NewsletterForm";
+import { filterProductsForDisplay } from "@/lib/product-display";
 import { db } from "@/lib/db";
 import { products, productVariants, productMedia, events } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
@@ -19,6 +20,11 @@ export default async function Home() {
           with: {
             media: true
           }
+        },
+        collections: {
+          with: {
+            collection: true
+          }
         }
       }
     }).catch(() => []),
@@ -29,7 +35,21 @@ export default async function Home() {
     }).catch(() => []),
   ]);
 
-  const featuredProducts = dbProducts.slice(0, 2);
+  const featuredConfig = homepage.featuredCollection || {};
+  let featuredProducts = filterProductsForDisplay(dbProducts as any, {
+    displayMode: featuredConfig.displayMode,
+    collectionId: featuredConfig.collectionId,
+    productIds: featuredConfig.productIds,
+    productLimit: featuredConfig.productLimit || 2,
+  });
+
+  // If no products matched the filter, fallback gracefully to Daily Series / Daily House first
+  if (featuredProducts.length === 0) {
+    const dailyFallback = dbProducts.filter((p: any) => 
+      p.name?.toLowerCase().includes("daily") || p.slug?.toLowerCase().includes("daily")
+    );
+    featuredProducts = (dailyFallback.length > 0 ? dailyFallback : dbProducts).slice(0, 2);
+  }
 
   return (
     <div className="w-full bg-kalana-offwhite text-kalana-black">

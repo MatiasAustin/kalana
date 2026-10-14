@@ -5,10 +5,13 @@ import { Loader2, ExternalLink, Plus, Trash2, FileText, CheckCircle2 } from "luc
 import { savePageContent, deletePage } from "@/lib/actions/pages";
 import { useRouter } from "next/navigation";
 import { ImageUploadField } from "./ImageUploadField";
+import { ProductSectionFilter } from "./ProductSectionFilter";
 
 interface PagesEditorProps {
   initialPagesData: Record<string, any>;
   customPages?: Array<{ slug: string; title: string }>;
+  allCollections?: any[];
+  allProducts?: any[];
 }
 
 const STANDARD_PAGE_TABS = [
@@ -23,7 +26,12 @@ const STANDARD_PAGE_TABS = [
   { slug: "shipping", title: "Shipping & Returns", path: "/shipping", icon: "🚚" },
 ];
 
-export function PagesEditor({ initialPagesData, customPages: initialCustom = [] }: PagesEditorProps) {
+export function PagesEditor({ 
+  initialPagesData, 
+  customPages: initialCustom = [],
+  allCollections = [],
+  allProducts = []
+}: PagesEditorProps) {
   const router = useRouter();
   const [activeSlug, setActiveSlug] = useState<string>("about");
   const [pagesState, setPagesState] = useState<Record<string, any>>(initialPagesData);
@@ -460,6 +468,21 @@ export function PagesEditor({ initialPagesData, customPages: initialCustom = [] 
                       className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-black outline-none font-sans"
                     />
                   </div>
+
+                  <ProductSectionFilter
+                    title="Filter Produk Koleksi Utama (Halaman Roastery)"
+                    description="Pilih kategori atau centang produk spesifik (misal: Daily House) agar produk lain seperti Terra Series tidak ikut tampil di section ini."
+                    collections={allCollections}
+                    allProducts={allProducts}
+                    displayMode={currentPage.collectionDisplayMode || "all"}
+                    collectionId={currentPage.collectionId || ""}
+                    productIds={currentPage.productIds || []}
+                    productLimit={currentPage.productLimit ?? 0}
+                    onChangeDisplayMode={(mode) => handleUpdateField("collectionDisplayMode", mode)}
+                    onChangeCollectionId={(colId) => handleUpdateField("collectionId", colId)}
+                    onChangeProductIds={(pIds) => handleUpdateField("productIds", pIds)}
+                    onChangeProductLimit={(limit) => handleUpdateField("productLimit", limit)}
+                  />
                 </div>
 
                 <div className="pt-4 border-t border-gray-200 space-y-4">

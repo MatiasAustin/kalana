@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { products } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { getPageContent } from "@/lib/cms-api";
+import { filterProductsForDisplay } from "@/lib/product-display";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -23,12 +24,44 @@ export default async function RoasteryPage() {
           with: {
             media: true
           }
+        },
+        collections: {
+          with: {
+            collection: true
+          }
         }
       },
       orderBy: [desc(products.createdAt)],
     }).catch(() => []),
     getPageContent("roastery")
   ]);
+
+  const displayConfig = {
+    displayMode: page.collectionDisplayMode,
+    collectionId: page.collectionId,
+    productIds: page.productIds,
+    productLimit: page.productLimit,
+  };
+
+  let featuredProducts = filterProductsForDisplay(allProducts as any, displayConfig);
+
+  // If no filter is set in CMS, default to Daily Series / Daily House for first launch
+  if (
+    featuredProducts.length === 0 ||
+    (!page.collectionDisplayMode && !page.collectionId && !page.productIds)
+  ) {
+    const dailyOnly = allProducts.filter((p: any) => 
+      p.name?.toLowerCase().includes("daily") || p.slug?.toLowerCase().includes("daily")
+    );
+    if (dailyOnly.length > 0) {
+      featuredProducts = dailyOnly;
+    }
+  }
+
+  // Any other active products (e.g. Terra Series) that are not in the primary featured collection
+  const otherProducts = allProducts.filter(
+    (p: any) => !featuredProducts.some((fp: any) => fp.id === p.id)
+  );
 
   return (
     <div className="w-full bg-kalana-offwhite pt-32 text-kalana-black min-h-screen">
@@ -96,8 +129,8 @@ export default async function RoasteryPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 lg:gap-32 border-t border-kalana-black/20 pt-16">
             
-            {allProducts.map((product, idx) => {
-              const primaryMedia = product.media.find(m => m.isPrimary)?.media || product.media[0]?.media;
+            {featuredProducts.map((product: any, idx: number) => {
+              const primaryMedia = product.media.find((m: any) => m.isPrimary)?.media || product.media[0]?.media;
               const firstVariant = product.variants[0];
               const price = firstVariant ? firstVariant.price : 0;
               const isEven = idx % 2 !== 0; // Stagger every second item
@@ -140,6 +173,71 @@ export default async function RoasteryPage() {
           </div>
         </div>
       </section>
+
+      {/* Additional / Other Series (e.g. Terra Series) - Separated cleanly from Featured Collection */}
+      {otherProducts.length > 0 && (
+        <section className="py-24 px-6 lg:px-12 border-b border-kalana-black/20 bg-kalana-black/[0.01]">
+          <div className="container mx-auto">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-16 gap-8">
+              <div>
+                <p className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 mb-4 font-mono">
+                  Series & Releases
+                </p>
+                <h2 className="text-4xl md:text-5xl font-semibold tracking-tight uppercase leading-none">
+                  Other Offerings.
+                </h2>
+              </div>
+              <p className="text-sm tracking-wide max-w-sm text-kalana-black/70">
+                Explore our distinct single origins, signature profiles, and specialty roasts.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+              {otherProducts.map((product: any) => {
+                const primaryMedia = product.media?.find((m: any) => m.isPrimary)?.media || product.media?.[0]?.media;
+                const firstVariant = product.variants?.[0];
+                const price = firstVariant ? firstVariant.price : 0;
+
+                return (
+                  <div key={product.id} className="group flex flex-col border border-kalana-black/10 bg-white p-6 rounded-sm">
+                    <Link href={`/product/${product.slug}`} className="block w-full aspect-square bg-kalana-black/5 mb-6 overflow-hidden relative">
+                      {primaryMedia ? (
+                        <img src={primaryMedia.url} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                      ) : (
+                        <div className="absolute inset-0 bg-kalana-black/10" />
+                      )}
+                    </Link>
+                    <div className="flex justify-between items-baseline mb-2">
+                      <Link href={`/product/${product.slug}`}>
+                        <h4 className="text-xl font-semibold uppercase tracking-wide group-hover:opacity-60 transition-opacity">
+                          {product.name}
+                        </h4>
+                      </Link>
+                      <span className="text-sm font-medium">IDR {price.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div className="flex gap-4 text-[10px] uppercase tracking-widest text-kalana-black/60 mb-3">
+                      <span>{product.blend || '-'}</span>
+                      <span>•</span>
+                      <span>{product.roast || '-'}</span>
+                    </div>
+                    {product.tastingNotes && (
+                      <p className="text-xs text-kalana-black/70 line-clamp-1 mb-6">
+                        {product.tastingNotes}
+                      </p>
+                    )}
+                    <Link
+                      href={`/product/${product.slug}`}
+                      className="mt-auto w-full py-2.5 border border-kalana-black text-center text-[10px] font-semibold tracking-[0.2em] uppercase hover:bg-kalana-black hover:text-white transition-colors"
+                    >
+                      View Product →
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Roasting Craft & Workshop Documentation Section */}
       <section className="py-24 px-6 lg:px-12 border-b border-kalana-black/20">

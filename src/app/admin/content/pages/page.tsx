@@ -1,7 +1,8 @@
 import { PagesEditor } from "@/components/admin/PagesEditor";
 import { getPageContent } from "@/lib/cms-api";
 import { db } from "@/lib/db";
-import { sitePages } from "@/lib/db/schema";
+import { sitePages, collections, products } from "@/lib/db/schema";
+import { asc, eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,8 @@ export default async function AdminPagesPage() {
     terms,
     privacy,
     shipping,
+    allCollections,
+    allProducts,
   ] = await Promise.all([
     getPageContent("about"),
     getPageContent("roastery"),
@@ -42,6 +45,14 @@ export default async function AdminPagesPage() {
     getPageContent("terms"),
     getPageContent("privacy"),
     getPageContent("shipping"),
+    db.query.collections.findMany({
+      with: { products: true },
+      orderBy: [asc(collections.name)],
+    }).catch(() => []),
+    db.query.products.findMany({
+      where: eq(products.status, 'ACTIVE'),
+      orderBy: [asc(products.name)],
+    }).catch(() => []),
   ]);
 
   const initialPagesData: Record<string, any> = {
@@ -85,6 +96,8 @@ export default async function AdminPagesPage() {
     <PagesEditor
       initialPagesData={initialPagesData}
       customPages={customPagesList}
+      allCollections={allCollections as any}
+      allProducts={allProducts as any}
     />
   );
 }

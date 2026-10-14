@@ -1,20 +1,36 @@
 import { HomepageEditor } from "@/components/admin/HomepageEditor";
 import { db } from "@/lib/db";
-import { homepageSections } from "@/lib/db/schema";
-import { asc } from "drizzle-orm";
+import { homepageSections, collections, products } from "@/lib/db/schema";
+import { asc, eq } from "drizzle-orm";
 import { getCmsData } from "@/lib/cms-api";
 
 export default async function HomepageEditorPage() {
-  const sections = await db.query.homepageSections.findMany({
-    orderBy: [asc(homepageSections.sortOrder)]
-  }).catch(() => []);
+  const [sections, allCollections, allProducts] = await Promise.all([
+    db.query.homepageSections.findMany({
+      orderBy: [asc(homepageSections.sortOrder)]
+    }).catch(() => []),
+    db.query.collections.findMany({
+      with: { products: true },
+      orderBy: [asc(collections.name)]
+    }).catch(() => []),
+    db.query.products.findMany({
+      where: eq(products.status, 'ACTIVE'),
+      orderBy: [asc(products.name)]
+    }).catch(() => [])
+  ]);
 
   if (sections && sections.length > 0) {
     const parsedSections = sections.map((s) => ({
       ...s,
       data: typeof s.data === "string" ? JSON.parse(s.data) : s.data
     }));
-    return <HomepageEditor initialSections={parsedSections} />;
+    return (
+      <HomepageEditor 
+        initialSections={parsedSections} 
+        allCollections={allCollections as any}
+        allProducts={allProducts as any}
+      />
+    );
   }
 
   // Fallback default sections
@@ -109,5 +125,11 @@ export default async function HomepageEditorPage() {
     }
   ];
 
-  return <HomepageEditor initialSections={defaultSections} />;
+  return (
+    <HomepageEditor 
+      initialSections={defaultSections} 
+      allCollections={allCollections as any}
+      allProducts={allProducts as any}
+    />
+  );
 }

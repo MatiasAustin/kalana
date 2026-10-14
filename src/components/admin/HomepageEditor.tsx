@@ -5,6 +5,7 @@ import { GripVertical, Plus, Loader2, Trash2, ChevronUp, ChevronDown } from "luc
 import { updateHomepageSections } from "@/lib/actions/homepage";
 import { useRouter } from "next/navigation";
 import { ImageUploadField } from "./ImageUploadField";
+import { ProductSectionFilter } from "./ProductSectionFilter";
 
 const SECTION_LABELS: Record<string, string> = {
   HERO: "Hero Banner",
@@ -16,7 +17,13 @@ const SECTION_LABELS: Record<string, string> = {
   NEWSLETTER: "Newsletter Signup"
 };
 
-export function HomepageEditor({ initialSections }: { initialSections: any[] }) {
+interface HomepageEditorProps {
+  initialSections: any[];
+  allCollections?: any[];
+  allProducts?: any[];
+}
+
+export function HomepageEditor({ initialSections, allCollections = [], allProducts = [] }: HomepageEditorProps) {
   const router = useRouter();
   const [sections, setSections] = useState<any[]>(initialSections);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(sections[0]?.id || null);
@@ -394,6 +401,24 @@ export function HomepageEditor({ initialSections }: { initialSections: any[] }) 
                         className="w-full text-sm px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-black outline-none font-mono"
                       />
                     </div>
+                  </div>
+
+                  {/* Section Product Display / Category Filter */}
+                  <div className="pt-2">
+                    <ProductSectionFilter
+                      title="Filter Produk Featured Collection (Beranda)"
+                      description="Pilih kategori atau centang produk spesifik (misal: Daily House) agar tidak tercampur dengan series lain seperti Terra Series."
+                      collections={allCollections}
+                      allProducts={allProducts}
+                      displayMode={activeSection.data.displayMode || "all"}
+                      collectionId={activeSection.data.collectionId || ""}
+                      productIds={activeSection.data.productIds || []}
+                      productLimit={activeSection.data.productLimit ?? 2}
+                      onChangeDisplayMode={(mode) => handleUpdateActiveSection("displayMode", mode)}
+                      onChangeCollectionId={(colId) => handleUpdateActiveSection("collectionId", colId)}
+                      onChangeProductIds={(pIds) => handleUpdateActiveSection("productIds", pIds)}
+                      onChangeProductLimit={(limit) => handleUpdateActiveSection("productLimit", limit)}
+                    />
                   </div>
                 </div>
               )}
