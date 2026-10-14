@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { updatePaymentSettings } from "@/lib/actions/settings";
 
 export function PaymentSettingsForm({ initialData }: { initialData: any }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{type: 'success'|'error', text: string} | null>(null);
+  const [showApiKey, setShowApiKey] = useState(false);
   
   const [formData, setFormData] = useState({
     activePaymentGateway: initialData.activePaymentGateway || "MAYAR",
@@ -24,7 +25,16 @@ export function PaymentSettingsForm({ initialData }: { initialData: any }) {
     setIsSubmitting(true);
     setMessage(null);
 
-    const res = await updatePaymentSettings(formData);
+    const payload = {
+      activePaymentGateway: formData.activePaymentGateway,
+      mayarApiKey: formData.mayarApiKey.trim(),
+      mayarPaymeUrl: formData.mayarPaymeUrl.trim(),
+      mayarCustomerPortalUrl: formData.mayarCustomerPortalUrl.trim(),
+      dokuClientId: formData.dokuClientId.trim(),
+      dokuSecretKey: formData.dokuSecretKey.trim(),
+    };
+
+    const res = await updatePaymentSettings(payload);
     
     if (res.success) {
       setMessage({ type: 'success', text: 'Payment settings saved successfully.' });
@@ -137,16 +147,40 @@ export function PaymentSettingsForm({ initialData }: { initialData: any }) {
 
           {/* API Key (Optional) */}
           <div className="pt-2 border-t border-gray-100">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mayar API Key (Opsional untuk Generate Invoice Otomatis)</label>
-            <input 
-              type="password"
-              value={formData.mayarApiKey}
-              onChange={(e) => setFormData({...formData, mayarApiKey: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black font-mono text-xs"
-              placeholder="sk_live_... (opsional, jika kosong sistem otomatis pakai PayMe Link di atas)"
-            />
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">
+                Mayar API Key / Token (Opsional untuk Generate Invoice Otomatis)
+              </label>
+              {formData.mayarApiKey && (
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, mayarApiKey: "" })}
+                  className="text-[11px] text-red-500 hover:text-red-700 hover:underline"
+                >
+                  Hapus Key
+                </button>
+              )}
+            </div>
+            
+            <div className="relative">
+              <input 
+                type={showApiKey ? "text" : "password"}
+                value={formData.mayarApiKey}
+                onChange={(e) => setFormData({...formData, mayarApiKey: e.target.value})}
+                className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black font-mono text-xs"
+                placeholder="sk_live_... atau JWT Token (eyJhbGci...)"
+              />
+              <button
+                type="button"
+                onClick={() => setShowApiKey(!showApiKey)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 p-1"
+                title={showApiKey ? "Sembunyikan API Key" : "Tampilkan API Key"}
+              >
+                {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
             <p className="text-xs text-gray-500 mt-1.5">
-              Jika diisi, sistem akan otomatis membuat invoice dinamis di Mayar dengan nominal belanja presisi. Jika dikosongkan, checkout otomatis diarahkan ke PayMe Link.
+              Mendukung API Token Mayar (JWT Token) maupun API Secret Key. Jika diisi, pesanan akan dibuatkan payment link instan melalui Headless API Mayar. Jika dikosongkan, checkout otomatis diarahkan ke PayMe Link.
             </p>
           </div>
 

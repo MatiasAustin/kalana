@@ -110,16 +110,40 @@ export async function updatePaymentSettings(data: {
 }) {
   try {
     await requireAdminApi();
-    await db
-      .insert(siteSettings)
-      .values({ id: 'global', ...data })
-      .onConflictDoUpdate({ target: siteSettings.id, set: data });
+
+    const existing = await db.query.siteSettings.findFirst({
+      where: eq(siteSettings.id, 'global')
+    });
+
+    const payload = {
+      activePaymentGateway: data.activePaymentGateway || 'MAYAR',
+      mayarApiKey: data.mayarApiKey ? data.mayarApiKey.trim() : null,
+      mayarPaymeUrl: data.mayarPaymeUrl ? data.mayarPaymeUrl.trim() : null,
+      mayarCustomerPortalUrl: data.mayarCustomerPortalUrl ? data.mayarCustomerPortalUrl.trim() : null,
+      dokuClientId: data.dokuClientId ? data.dokuClientId.trim() : null,
+      dokuSecretKey: data.dokuSecretKey ? data.dokuSecretKey.trim() : null,
+      updatedAt: new Date(),
+    };
+
+    if (existing) {
+      await db.update(siteSettings)
+        .set(payload)
+        .where(eq(siteSettings.id, 'global'));
+    } else {
+      await db.insert(siteSettings).values({
+        id: 'global',
+        ...payload,
+      });
+    }
+
     revalidatePath('/admin/settings/payments');
     revalidatePath('/checkout');
     revalidatePath('/account/orders');
     return { success: true };
   } catch (error: any) {
+    console.error("[UPDATE_PAYMENT_SETTINGS_ERROR]", error);
     return { success: false, error: error.message };
   }
 }
+
 
