@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { v4 as uuidv4 } from "uuid";
 import { requireAdminApi } from "@/lib/auth";
+import { ensureDbSchema } from "@/lib/db/migrate-helper";
 
 export async function updateOrderStatus(orderId: string, status: string) {
   try {
@@ -147,6 +148,7 @@ export interface UpdateShipmentInput {
 export async function updateShipmentDetails(input: UpdateShipmentInput) {
   try {
     await requireAdminApi();
+    await ensureDbSchema();
 
     const current = await db.query.orders.findFirst({
       where: eq(orders.id, input.orderId),
@@ -265,6 +267,8 @@ export async function updateShipmentDetails(input: UpdateShipmentInput) {
 
 export async function getShipmentTracking(orderNumber: string) {
   try {
+    await ensureDbSchema();
+
     const order = await db.query.orders.findFirst({
       where: eq(orders.orderNumber, orderNumber),
       with: {

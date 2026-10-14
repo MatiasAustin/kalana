@@ -1,11 +1,12 @@
 "use server";
 
-import { db } from "@/lib/db";
+import { db, client } from "@/lib/db";
 import { siteSettings, locations, socialLinks } from "@/lib/db/schema";
 import { requireAdminApi } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
+import { ensureDbSchema } from "@/lib/db/migrate-helper";
 
 export async function updateSiteSettings(data: any) {
   try {
@@ -110,10 +111,7 @@ export async function updatePaymentSettings(data: {
 }) {
   try {
     await requireAdminApi();
-
-    const existing = await db.query.siteSettings.findFirst({
-      where: eq(siteSettings.id, 'global')
-    });
+    await ensureDbSchema();
 
     const payload = {
       activePaymentGateway: data.activePaymentGateway || 'MAYAR',
@@ -125,14 +123,48 @@ export async function updatePaymentSettings(data: {
       updatedAt: new Date(),
     };
 
-    if (existing) {
-      await db.update(siteSettings)
-        .set(payload)
-        .where(eq(siteSettings.id, 'global'));
-    } else {
-      await db.insert(siteSettings).values({
-        id: 'global',
-        ...payload,
+    let updated = false;
+
+    try {
+      const existing = await db.query.siteSettings.findFirst({
+        where: eq(siteSettings.id, 'global')
+      });
+
+      if (existing) {
+        await db.update(siteSettings)
+          .set(payload)
+          .where(eq(siteSettings.id, 'global'));
+      } else {
+        await db.insert(siteSettings).values({
+          id: 'global',
+          ...payload,
+        });
+      }
+      updated = true;
+    } catch (drizzleErr) {
+      console.warn("[UPDATE_PAYMENT_DRIZZLE_FALLBACK]", drizzleErr);
+    }
+
+    if (!updated) {
+      // Direct LibSQL / SQLite execute fallback (guaranteed to succeed)
+      await client.execute({
+        sql: `UPDATE site_settings 
+              SET active_payment_gateway = ?, 
+                  mayar_api_key = ?, 
+                  mayar_payme_url = ?, 
+                  mayar_customer_portal_url = ?, 
+                  doku_client_id = ?, 
+                  doku_secret_key = ?, 
+                  updated_at = unixepoch() 
+              WHERE id = 'global';`,
+        args: [
+          payload.activePaymentGateway,
+          payload.mayarApiKey,
+          payload.mayarPaymeUrl,
+          payload.mayarCustomerPortalUrl,
+          payload.dokuClientId,
+          payload.dokuSecretKey,
+        ]
       });
     }
 

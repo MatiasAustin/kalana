@@ -1,22 +1,34 @@
-import { db } from "@/lib/db";
+import { db, client } from "@/lib/db";
 import { siteSettings } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { PaymentSettingsForm } from "@/components/admin/PaymentSettingsForm";
+import { ensureDbSchema } from "@/lib/db/migrate-helper";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 export default async function PaymentSettingsPage() {
-  const settings = await db.query.siteSettings.findFirst({
+  await ensureDbSchema();
+
+  let settings: any = await db.query.siteSettings.findFirst({
     where: eq(siteSettings.id, 'global')
   }).catch(() => null);
 
+  if (!settings) {
+    try {
+      const raw = await client.execute("SELECT * FROM site_settings WHERE id = 'global' LIMIT 1;");
+      if (raw.rows && raw.rows.length > 0) {
+        settings = raw.rows[0];
+      }
+    } catch {}
+  }
+
   const initialData = {
-    activePaymentGateway: settings?.activePaymentGateway || 'MAYAR',
-    mayarApiKey: settings?.mayarApiKey || '',
-    mayarPaymeUrl: settings?.mayarPaymeUrl || 'https://mayar.to/kalanaspaceroastery',
-    mayarCustomerPortalUrl: settings?.mayarCustomerPortalUrl || 'https://kalanaspaceroastery.myr.id/portal',
-    dokuClientId: settings?.dokuClientId || '',
-    dokuSecretKey: settings?.dokuSecretKey || '',
+    activePaymentGateway: settings?.activePaymentGateway || settings?.active_payment_gateway || 'MAYAR',
+    mayarApiKey: settings?.mayarApiKey || settings?.mayar_api_key || '',
+    mayarPaymeUrl: settings?.mayarPaymeUrl || settings?.mayar_payme_url || 'https://mayar.to/kalanaspaceroastery',
+    mayarCustomerPortalUrl: settings?.mayarCustomerPortalUrl || settings?.mayar_customer_portal_url || 'https://kalanaspaceroastery.myr.id/portal',
+    dokuClientId: settings?.dokuClientId || settings?.doku_client_id || '',
+    dokuSecretKey: settings?.dokuSecretKey || settings?.doku_secret_key || '',
   };
 
   return (
