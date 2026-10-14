@@ -10,7 +10,13 @@ import { ensureDbSchema } from "@/lib/db/migrate-helper";
 export async function processCheckout(
   formData: any,
   cartItems: any[],
-  appliedDiscount?: { code: string; amount: number } | null
+  appliedDiscount?: { code: string; amount: number } | null,
+  selectedCourier?: {
+    courierName: string;
+    serviceName: string;
+    price: number;
+    etd?: string;
+  } | null
 ) {
   try {
     await ensureDbSchema();
@@ -84,7 +90,11 @@ export async function processCheckout(
     }
 
     // Shipping & discount calculation
-    const shippingCost = appliedDiscount && appliedDiscount.code === "FREESHIP" ? 0 : 25000;
+    let baseShippingCost = 25000;
+    if (selectedCourier && typeof selectedCourier.price === "number" && selectedCourier.price >= 0) {
+      baseShippingCost = selectedCourier.price;
+    }
+    const shippingCost = appliedDiscount && appliedDiscount.code === "FREESHIP" ? 0 : baseShippingCost;
     const discountValue = appliedDiscount ? Number(appliedDiscount.amount || 0) : 0;
     const total = Math.max(0, subtotal + shippingCost - (appliedDiscount?.code === "FREESHIP" ? 0 : discountValue));
 
@@ -162,6 +172,10 @@ export async function processCheckout(
       currency: 'IDR',
       shippingAddressId: addressId,
       billingAddressId: addressId,
+      courier: selectedCourier?.courierName || 'JNE',
+      courierService: selectedCourier?.serviceName || 'Reguler',
+      shippingStatus: 'PENDING',
+      currentLocation: 'Roastery Cikampek',
     });
 
     // 6. Create Order Items

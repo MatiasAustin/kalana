@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { useCartStore } from "@/store/cartStore";
 import { processCheckout } from "@/lib/actions/checkout";
 import { validateDiscountCode } from "@/lib/actions/marketing";
-import { AlertCircle } from "lucide-react";
+import { fetchCourierRates } from "@/lib/actions/shipping";
+import { CourierRateOption } from "@/lib/shipping/biteship";
+import { AlertCircle, Truck, Loader2 } from "lucide-react";
 
 export default function CheckoutPage() {
   const { isSignedIn, isLoaded } = useAuth();
@@ -36,8 +38,60 @@ export default function CheckoutPage() {
   const [discountError, setDiscountError] = useState<string | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
+  // Courier & real-time shipping state
+  const [courierRates, setCourierRates] = useState<CourierRateOption[]>([]);
+  const [selectedCourier, setSelectedCourier] = useState<CourierRateOption | null>(null);
+  const [isLoadingRates, setIsLoadingRates] = useState(false);
+  const [ratesNote, setRatesNote] = useState<string | null>(null);
+  const [totalWeightGrams, setTotalWeightGrams] = useState<number>(0);
+
+  // Auto-fetch courier rates whenever destination city, province, or zip changes
+  useEffect(() => {
+    const city = formData.city.trim();
+    if (!city || city.length < 3 || items.length === 0) return;
+
+    const timer = setTimeout(async () => {
+      setIsLoadingRates(true);
+      try {
+        const res = await fetchCourierRates({
+          city: formData.city,
+          province: formData.province,
+          zip: formData.zip,
+          items: items.map((it) => ({
+            name: it.name,
+            variant: it.variant,
+            price: it.price,
+            quantity: it.quantity,
+          })),
+        });
+
+        if (res.success && res.rates.length > 0) {
+          setCourierRates(res.rates);
+          setTotalWeightGrams(res.totalWeightGrams);
+          setRatesNote(res.note || null);
+
+          // Maintain selection or auto-select cheapest
+          setSelectedCourier((prev) => {
+            if (prev) {
+              const matched = res.rates.find((r) => r.id === prev.id);
+              if (matched) return matched;
+            }
+            return res.rates[0];
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching rates", err);
+      } finally {
+        setIsLoadingRates(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [formData.city, formData.province, formData.zip, items]);
+
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shippingCost = appliedDiscount && appliedDiscount.code === "FREESHIP" ? 0 : 25000;
+  const baseShippingCost = selectedCourier ? selectedCourier.price : (courierRates[0]?.price ?? 25000);
+  const shippingCost = appliedDiscount && appliedDiscount.code === "FREESHIP" ? 0 : baseShippingCost;
   const discountValue = appliedDiscount ? appliedDiscount.amount : 0;
   const total = Math.max(0, subtotal + shippingCost - (appliedDiscount?.code === "FREESHIP" ? 0 : discountValue));
 
@@ -75,7 +129,7 @@ export default function CheckoutPage() {
     
     setIsSubmitting(true);
     try {
-      const res = await processCheckout(formData, items, appliedDiscount);
+      const res = await processCheckout(formData, items, appliedDiscount, selectedCourier);
       if (res.success) {
         clearCart();
         if (res.paymentUrl) {
@@ -223,6 +277,91 @@ export default function CheckoutPage() {
               </div>
             </section>
 
+            {/* Courier & Shipping Method */}
+            <section className="pt-2">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-kalana-black/50">
+                  Delivery Method / Kurir Pengiriman
+                </h2>
+                {totalWeightGrams > 0 && (
+                  <span className="text-[10px] font-mono text-kalana-black/60 bg-kalana-black/5 px-2 py-0.5 rounded">
+                    Total: {totalWeightGrams.toLocaleString("id-ID")}g ({(totalWeightGrams / 1000).toFixed(1)} kg)
+                  </span>
+                )}
+              </div>
+
+              {isLoadingRates ? (
+                <div className="p-6 border border-dashed border-kalana-black/20 text-center rounded-sm bg-kalana-black/5 space-y-2">
+                  <Loader2 className="w-5 h-5 animate-spin mx-auto text-kalana-black/60" />
+                  <p className="text-xs text-kalana-black/70 font-mono">
+                    Menghitung tarif ekspedisi real-time dari Roastery KALANA...
+                  </p>
+                </div>
+              ) : courierRates.length > 0 ? (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 gap-2.5">
+                    {courierRates.map((rate) => {
+                      const isSelected = selectedCourier?.id === rate.id;
+                      return (
+                        <div
+                          key={rate.id}
+                          onClick={() => setSelectedCourier(rate)}
+                          className={`p-3.5 border rounded-sm cursor-pointer transition-all flex items-center justify-between ${
+                            isSelected
+                              ? "border-kalana-black bg-kalana-black/5 shadow-xs"
+                              : "border-kalana-black/15 bg-white hover:border-kalana-black/40"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+                              isSelected ? "border-kalana-black bg-kalana-black" : "border-kalana-black/30"
+                            }`}>
+                              {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-xs font-mono uppercase text-kalana-black">
+                                  {rate.courierName}
+                                </span>
+                                <span className="text-[11px] font-semibold text-kalana-black/80 font-sans">
+                                  {rate.serviceName}
+                                </span>
+                                {rate.source === "biteship_live" && (
+                                  <span className="text-[9px] px-1.5 py-0.5 bg-emerald-100 text-emerald-800 font-mono rounded font-medium">
+                                    Biteship Live
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-kalana-black/50 block font-mono mt-0.5">
+                                Estimasi sampai: {rate.etd}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-mono text-xs font-bold text-kalana-black">
+                              IDR {rate.price.toLocaleString("id-ID")}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {ratesNote && (
+                    <p className="text-[10px] text-kalana-black/40 font-mono text-right">
+                      {ratesNote} • Asal: Cikampek, Karawang
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="p-4 border border-kalana-black/15 rounded-sm bg-kalana-black/5 text-xs text-kalana-black/60 flex items-start sm:items-center gap-2.5 font-mono">
+                  <Truck className="w-4 h-4 shrink-0 text-kalana-black/50 mt-0.5 sm:mt-0" />
+                  <span>
+                    Isi <strong>Kota / Kecamatan</strong> & <strong>Kode Pos</strong> tujuan di atas untuk memuat pilihan ekspedisi real-time (JNE, SiCepat, J&T, Anteraja).
+                  </span>
+                </div>
+              )}
+            </section>
+
             {checkoutError && (
               <div className="p-4 bg-red-50/90 border border-red-200 text-red-900 rounded-sm text-xs flex items-start gap-3 my-6 animate-in fade-in duration-200">
                 <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
@@ -324,8 +463,15 @@ export default function CheckoutPage() {
               <span>Subtotal</span>
               <span className="text-sm font-medium tracking-wide text-kalana-black">IDR {subtotal.toLocaleString('id-ID')}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span>Shipping</span>
+            <div className="flex justify-between items-start">
+              <div>
+                <span>Shipping</span>
+                {selectedCourier && (
+                  <span className="text-[9px] text-kalana-black/50 normal-case block font-mono mt-0.5">
+                    {selectedCourier.courierName} {selectedCourier.serviceName} ({selectedCourier.etd})
+                  </span>
+                )}
+              </div>
               <span className="text-sm font-medium tracking-wide text-kalana-black">
                 {shippingCost === 0 ? "FREE" : `IDR ${shippingCost.toLocaleString('id-ID')}`}
               </span>

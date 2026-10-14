@@ -228,6 +228,12 @@ export const siteSettings = sqliteTable('site_settings', {
   dokuClientId: text('doku_client_id'),
   dokuSecretKey: text('doku_secret_key'),
   
+  // Shipping & Logistics (Biteship)
+  biteshipApiKey: text('biteship_api_key'),
+  shippingOriginPostalCode: text('shipping_origin_postal_code').default('41373'),
+  shippingOriginCity: text('shipping_origin_city').default('Karawang'),
+  shippingOriginProvince: text('shipping_origin_province').default('Jawa Barat'),
+
   updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
 
