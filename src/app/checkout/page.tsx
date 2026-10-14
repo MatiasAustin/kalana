@@ -7,6 +7,7 @@ import { useAuth } from "@clerk/nextjs";
 import { useCartStore } from "@/store/cartStore";
 import { processCheckout } from "@/lib/actions/checkout";
 import { validateDiscountCode } from "@/lib/actions/marketing";
+import { AlertCircle } from "lucide-react";
 
 export default function CheckoutPage() {
   const { isSignedIn, isLoaded } = useAuth();
@@ -33,6 +34,7 @@ export default function CheckoutPage() {
   const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; amount: number; description?: string } | null>(null);
   const [isValidatingCode, setIsValidatingCode] = useState(false);
   const [discountError, setDiscountError] = useState<string | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const shippingCost = appliedDiscount && appliedDiscount.code === "FREESHIP" ? 0 : 25000;
@@ -64,7 +66,12 @@ export default function CheckoutPage() {
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (items.length === 0) return alert("Cart is empty");
+    setCheckoutError(null);
+
+    if (items.length === 0) {
+      setCheckoutError("Keranjang belanja Anda masih kosong. Silakan tambahkan produk terlebih dahulu.");
+      return;
+    }
     
     setIsSubmitting(true);
     try {
@@ -77,10 +84,10 @@ export default function CheckoutPage() {
           router.push(`/checkout/success?order=${res.orderNumber}`);
         }
       } else {
-        alert(res.error);
+        setCheckoutError(res.error || "Gagal memproses pesanan. Silakan periksa kembali data Anda.");
       }
     } catch (err: any) {
-      alert("Error processing checkout");
+      setCheckoutError("Terjadi kendala saat memproses pesanan. Silakan coba kembali.");
     } finally {
       setIsSubmitting(false);
     }
@@ -215,6 +222,20 @@ export default function CheckoutPage() {
                 />
               </div>
             </section>
+
+            {checkoutError && (
+              <div className="p-4 bg-red-50/90 border border-red-200 text-red-900 rounded-sm text-xs flex items-start gap-3 my-6 animate-in fade-in duration-200">
+                <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                <div className="space-y-1 font-sans">
+                  <p className="font-semibold uppercase tracking-wider text-[11px] font-mono text-red-950">
+                    Kendala Pemesanan
+                  </p>
+                  <p className="leading-relaxed text-red-800">
+                    {checkoutError}
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="flex justify-between items-center pt-8">
               <Link href="/cart" className="text-[10px] text-kalana-black/50 hover:text-kalana-black transition-colors tracking-[0.2em] uppercase border-b border-transparent hover:border-kalana-black pb-1">

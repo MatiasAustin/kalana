@@ -52,6 +52,7 @@ export default function ProductClient({ product }: { product: any }) {
     
     addItem({
       id: product.id,
+      variantId: selectedVariant.id,
       name: product.name,
       collection: product.collection || 'General',
       variant: selectedVariant.name,

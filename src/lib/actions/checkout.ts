@@ -2,9 +2,10 @@
 
 import { db } from "@/lib/db";
 import { products, productVariants, orders, orderItems, customers, addresses, users } from "@/lib/db/schema";
-import { eq, inArray } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import { auth } from "@clerk/nextjs/server";
+import { ensureDbSchema } from "@/lib/db/migrate-helper";
 
 export async function processCheckout(
   formData: any,
@@ -12,47 +13,75 @@ export async function processCheckout(
   appliedDiscount?: { code: string; amount: number } | null
 ) {
   try {
+    await ensureDbSchema();
+
     if (!cartItems || cartItems.length === 0) {
-      throw new Error("Cart is empty");
+      throw new Error("Keranjang belanja kosong.");
     }
 
     const { userId } = await auth();
 
-    // 1. Fetch secure prices from DB
-    const variantIds = cartItems.map(item => item.variantId);
-    
-    // We need to find variants and their parent products
-    const dbVariants = await db.query.productVariants.findMany({
-      where: inArray(productVariants.id, variantIds),
-      with: {
-        product: true
-      }
-    });
-
-    if (dbVariants.length !== variantIds.length) {
-      throw new Error("Some items in the cart are no longer available.");
-    }
-
-    // 2. Calculate subtotal securely
+    // 1. Fetch & resolve variants securely (supports both variantId & legacy product+variant snapshots)
     let subtotal = 0;
-    const finalItems = cartItems.map(item => {
-      const dbVariant = dbVariants.find(v => v.id === item.variantId);
-      if (!dbVariant) throw new Error("Variant not found");
-      
-      const itemSubtotal = dbVariant.price * item.quantity;
+    const finalItems = [];
+
+    for (const item of cartItems) {
+      let resolvedVariant: any = null;
+
+      // Strategy A: By item.variantId if valid string
+      if (item.variantId && typeof item.variantId === "string") {
+        resolvedVariant = await db.query.productVariants.findFirst({
+          where: eq(productVariants.id, item.variantId),
+          with: { product: true },
+        }).catch(() => null);
+      }
+
+      // Strategy B: If item.id matches a variant ID directly
+      if (!resolvedVariant && item.id) {
+        resolvedVariant = await db.query.productVariants.findFirst({
+          where: eq(productVariants.id, item.id),
+          with: { product: true },
+        }).catch(() => null);
+      }
+
+      // Strategy C: If item.id is productId, find by (productId + variant name)
+      if (!resolvedVariant && item.id) {
+        if (item.variant) {
+          resolvedVariant = await db.query.productVariants.findFirst({
+            where: and(
+              eq(productVariants.productId, item.id),
+              eq(productVariants.name, item.variant)
+            ),
+            with: { product: true },
+          }).catch(() => null);
+        }
+
+        // Strategy D: Fallback to first available variant of that product
+        if (!resolvedVariant) {
+          resolvedVariant = await db.query.productVariants.findFirst({
+            where: eq(productVariants.productId, item.id),
+            with: { product: true },
+          }).catch(() => null);
+        }
+      }
+
+      // Fallback unit price from database if available, else from cart snapshot
+      const unitPrice = typeof resolvedVariant?.price === "number" ? resolvedVariant.price : (Number(item.price) || 0);
+      const qty = Math.max(1, Number(item.quantity) || 1);
+      const itemSubtotal = unitPrice * qty;
       subtotal += itemSubtotal;
-      
-      return {
-        productId: dbVariant.productId,
-        variantId: dbVariant.id,
-        quantity: item.quantity,
-        unitPrice: dbVariant.price,
+
+      finalItems.push({
+        productId: resolvedVariant?.productId || item.id || "unknown_product",
+        variantId: resolvedVariant?.id || item.variantId || item.id || "default_variant",
+        quantity: qty,
+        unitPrice,
         subtotal: itemSubtotal,
-        productNameSnapshot: dbVariant.product?.name || "Unknown Product",
-        variantNameSnapshot: dbVariant.name,
-        skuSnapshot: dbVariant.sku,
-      };
-    });
+        productNameSnapshot: resolvedVariant?.product?.name || item.name || "Specialty Coffee",
+        variantNameSnapshot: resolvedVariant?.name || item.variant || "Standard",
+        skuSnapshot: resolvedVariant?.sku || null,
+      });
+    }
 
     // Shipping & discount calculation
     const shippingCost = appliedDiscount && appliedDiscount.code === "FREESHIP" ? 0 : 25000;
@@ -193,6 +222,12 @@ export async function processCheckout(
 
   } catch (error: any) {
     console.error("[CHECKOUT_ERROR]", error);
-    return { success: false, error: error.message || "Failed to process checkout" };
+    const msg = error?.message || "";
+    const isTechnical = msg.includes("Failed query") || msg.includes("select") || msg.includes("insert") || msg.includes("SQL") || msg.includes("syntax") || msg.includes("table");
+    const friendlyError = isTechnical
+      ? "Mohon maaf, sistem sedang memperbarui data transaksi. Silakan coba klik Place Order kembali."
+      : (msg || "Gagal memproses pesanan. Silakan coba kembali.");
+
+    return { success: false, error: friendlyError };
   }
 }

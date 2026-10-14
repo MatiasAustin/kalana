@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 export interface CartItem {
   id: string;
+  variantId?: string;
   name: string;
   collection: string;
   variant: string;
