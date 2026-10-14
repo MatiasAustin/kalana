@@ -18,7 +18,11 @@ import {
   Trash2,
   ExternalLink,
   MessageSquare,
-  FileText
+  FileText,
+  Copy,
+  Check,
+  Share2,
+  Mail
 } from "lucide-react";
 import { 
   updateOrderStatus, 
@@ -51,6 +55,8 @@ export function OrderDetailClient({ order: initialOrder }: OrderDetailProps) {
   const [newTimelineNote, setNewTimelineNote] = useState("");
   const [isUpdatingShipment, setIsUpdatingShipment] = useState(false);
   const [shipmentMessage, setShipmentMessage] = useState<string | null>(null);
+  const [copiedTrackingMessage, setCopiedTrackingMessage] = useState(false);
+  const [showTrackingTemplate, setShowTrackingTemplate] = useState(false);
 
   // Fulfillment Modal State
   const [showFulfillModal, setShowFulfillModal] = useState(false);
@@ -217,9 +223,32 @@ export function OrderDetailClient({ order: initialOrder }: OrderDetailProps) {
 
   const customerName = order.customer 
     ? `${order.customer.firstName || ""} ${order.customer.lastName || ""}`.trim() || "Customer"
-    : "Guest Customer";
+    : (order.shippingAddress?.firstName ? `${order.shippingAddress.firstName} ${order.shippingAddress.lastName || ""}`.trim() : "Guest Customer");
 
   const shippingAddr = order.shippingAddress;
+
+  const rawPhone = order.customer?.phone || order.shippingAddress?.phone || "";
+  let cleanPhone = rawPhone.replace(/\D/g, "");
+  if (cleanPhone.startsWith("0")) {
+    cleanPhone = "62" + cleanPhone.slice(1);
+  } else if (cleanPhone.startsWith("8")) {
+    cleanPhone = "62" + cleanPhone;
+  }
+
+  const generateTrackingMessage = () => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://kalana.co";
+    const trackingLink = `${origin}/tracking/${order.orderNumber}`;
+    const name = customerName !== "Customer" && customerName !== "Guest Customer" ? customerName : "Kak";
+    
+    return `Halo ${name}! 👋\n\nTerima kasih telah memesan di KALANA Space & Roastery. ☕✨\n\nBerikut adalah informasi pengiriman pesanan Anda:\n📦 No. Pesanan: ${order.orderNumber}\n🚚 Ekspedisi: ${courier} ${courierService ? `(${courierService})` : ""}\n🏷️ No. Resi: ${trackingNumber || "Dalam proses serah terima ke kurir"}\n📍 Status: ${shippingStatus}\n📍 Posisi Terkini: ${currentLocation || "KALANA Roastery (Cikampek)"}\n📅 Estimasi Tiba: ${estimatedDeliveryDate || "-"}\n\n🗺️ Pantau rute & live peta pengiriman kurir kami di:\n${trackingLink}\n\nJika ada pertanyaan, silakan balas pesan ini. Salam hangat dari KALANA!`;
+  };
+
+  const handleCopyTrackingMessage = () => {
+    const text = generateTrackingMessage();
+    navigator.clipboard.writeText(text);
+    setCopiedTrackingMessage(true);
+    setTimeout(() => setCopiedTrackingMessage(false), 2500);
+  };
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -422,16 +451,86 @@ export function OrderDetailClient({ order: initialOrder }: OrderDetailProps) {
                 </span>
               </div>
 
-              <a
-                href={`/tracking/${order.orderNumber}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black text-white hover:bg-gray-800 rounded text-[11px] font-semibold transition-colors w-fit"
-              >
-                <MapPin className="w-3.5 h-3.5 text-amber-400" />
-                Buka Live Map Pelanggan
-                <ExternalLink className="w-3 h-3 text-gray-400" />
-              </a>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleCopyTrackingMessage}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded text-[11px] font-semibold transition-colors border border-gray-300"
+                  title="Salin pesan informasi tracking untuk dikirim ke customer via WA/Email"
+                >
+                  {copiedTrackingMessage ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-green-600" />
+                      <span className="text-green-700 font-bold">Pesan Tersalin!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 text-gray-600" />
+                      <span>Salin Pesan WA/Email</span>
+                    </>
+                  )}
+                </button>
+
+                {cleanPhone && (
+                  <a
+                    href={`https://wa.me/${cleanPhone}?text=${encodeURIComponent(generateTrackingMessage())}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-semibold transition-colors shadow-sm"
+                  >
+                    <Share2 className="w-3.5 h-3.5" />
+                    Kirim WA Customer
+                  </a>
+                )}
+
+                <a
+                  href={`/tracking/${order.orderNumber}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black text-white hover:bg-gray-800 rounded text-[11px] font-semibold transition-colors w-fit shadow-sm"
+                >
+                  <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                  Buka Live Map Pelanggan
+                  <ExternalLink className="w-3 h-3 text-gray-400" />
+                </a>
+              </div>
+            </div>
+
+            {/* Box Salin / Kirim Pesan Tracking untuk Pelanggan (Guest / WhatsApp / Email) */}
+            <div className="bg-amber-50/60 border border-amber-200/80 rounded-lg p-3.5 space-y-2.5 font-sans">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                  <span className="font-bold text-xs uppercase tracking-wider text-amber-950 font-mono">
+                    Pesan Siap Kirim ke Pelanggan (Guest / WhatsApp / Email)
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowTrackingTemplate(!showTrackingTemplate)}
+                  className="text-[11px] text-amber-800 hover:underline font-mono"
+                >
+                  {showTrackingTemplate ? "Sembunyikan Teks ▲" : "Lihat Format Pesan ▼"}
+                </button>
+              </div>
+
+              {showTrackingTemplate && (
+                <div className="space-y-2 pt-1">
+                  <pre className="text-[11px] font-mono text-gray-800 whitespace-pre-wrap bg-white p-3 rounded border border-amber-200/60 select-all leading-relaxed max-h-48 overflow-y-auto">
+                    {generateTrackingMessage()}
+                  </pre>
+                  <div className="flex items-center justify-between text-[11px] text-amber-900/80">
+                    <span>💡 Format pesan di atas otomatis menyertakan nomor pesanan, resi, dan tautan live radar map.</span>
+                    <button
+                      type="button"
+                      onClick={handleCopyTrackingMessage}
+                      className="text-amber-900 font-bold hover:underline"
+                    >
+                      {copiedTrackingMessage ? "Tersalin!" : "Salin Teks"}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {shipmentMessage && (

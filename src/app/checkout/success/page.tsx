@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { orders, siteSettings } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { CheckCircle2, Clock, ExternalLink, ArrowRight, ShieldCheck, FileText, Truck, MapPin } from "lucide-react";
+import { CustomerTrackingShareCard } from "@/components/tracking/CustomerTrackingShareCard";
 
 export const dynamic = "force-dynamic";
 
@@ -163,29 +164,8 @@ export default async function CheckoutSuccessPage({ searchParams }: SuccessPageP
               </div>
             </div>
 
-            {/* Live Tracking Map Link Banner */}
-            <div className="bg-stone-900 text-stone-100 p-5 rounded-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                  <MapPin className="w-5 h-5 text-amber-400" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-sm uppercase tracking-wider text-white">
-                    Live Tracking & Peta Pengiriman
-                  </h4>
-                  <p className="text-xs text-stone-400 mt-0.5">
-                    Pantau rute ekspedisi dan posisi pengiriman pesanan secara live dari Roastery Cikampek ke alamat Anda.
-                  </p>
-                </div>
-              </div>
-              <Link
-                href={`/tracking/${orderData.orderNumber}`}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-stone-950 font-bold text-xs uppercase tracking-wider rounded-sm transition-all whitespace-nowrap shadow-sm self-start sm:self-auto"
-              >
-                <Truck className="w-4 h-4" />
-                Lacak Peta Live <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
+            {/* Live Tracking Map Link Banner with Copy & Share */}
+            <CustomerTrackingShareCard orderNumber={orderData.orderNumber} />
 
             {/* Customer Portal Link Banner */}
             <div className="bg-gray-50 border border-gray-200 p-4 rounded-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
