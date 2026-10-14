@@ -33,6 +33,14 @@ interface ShipmentTimelineProps {
   history?: TimelineItem[];
   destinationCity?: string;
   destinationAddress?: string;
+  isRealtimeBiteship?: boolean;
+  biteshipTrackingPortalUrl?: string | null;
+  biteshipDriver?: {
+    name?: string;
+    phone?: string;
+    photoUrl?: string;
+    vehicle?: string;
+  } | null;
 }
 
 export function ShipmentTimeline({
@@ -45,6 +53,9 @@ export function ShipmentTimeline({
   history = [],
   destinationCity,
   destinationAddress,
+  isRealtimeBiteship = false,
+  biteshipTrackingPortalUrl,
+  biteshipDriver,
 }: ShipmentTimelineProps) {
   const [copied, setCopied] = useState(false);
 
@@ -105,8 +116,10 @@ export function ShipmentTimeline({
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black text-white hover:bg-gray-800 rounded text-xs font-semibold uppercase tracking-wider transition-colors font-mono"
+                  title="Cek di Biteship Tracking"
                 >
-                  Cek Resi ↗
+                  <span>Biteship Track</span>
+                  <ExternalLink className="w-3 h-3" />
                 </a>
               )}
             </div>
@@ -117,6 +130,61 @@ export function ShipmentTimeline({
           </div>
         )}
       </div>
+
+      {/* Realtime Biteship Connected Banner */}
+      {isRealtimeBiteship && (
+        <div className="flex items-center justify-between p-3.5 bg-emerald-50/80 border border-emerald-200/80 rounded-lg text-xs text-emerald-900 font-mono">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Terhubung ke <strong>Biteship Realtime Tracking Engine</strong></span>
+          </div>
+          {biteshipTrackingPortalUrl && (
+            <a
+              href={biteshipTrackingPortalUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-[11px] text-emerald-800 hover:text-emerald-950 font-bold underline flex items-center gap-1"
+            >
+              track.biteship.com <ExternalLink className="w-3 h-3" />
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* Driver Info Card (if assigned by courier/Biteship) */}
+      {biteshipDriver && (
+        <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between text-xs">
+          <div className="flex items-center gap-3">
+            {biteshipDriver.photoUrl ? (
+              <img
+                src={biteshipDriver.photoUrl}
+                alt={biteshipDriver.name}
+                className="w-10 h-10 rounded-full object-cover border border-gray-300"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-kalana-black text-white flex items-center justify-center font-bold text-xs font-mono">
+                {biteshipDriver.name?.[0] || "K"}
+              </div>
+            )}
+            <div>
+              <span className="font-bold text-sm block font-sans text-gray-900">
+                {biteshipDriver.name}
+              </span>
+              <span className="text-gray-500 text-[11px] block font-mono">
+                {biteshipDriver.vehicle || "Kurir Pengantar Ekspedisi"}
+              </span>
+            </div>
+          </div>
+          {biteshipDriver.phone && (
+            <a
+              href={`tel:${biteshipDriver.phone}`}
+              className="px-3 py-1.5 bg-white border border-gray-300 rounded font-mono text-[11px] text-gray-700 hover:bg-gray-100"
+            >
+              Hubungi: {biteshipDriver.phone}
+            </a>
+          )}
+        </div>
+      )}
 
       {/* Destination Summary */}
       {(destinationCity || destinationAddress) && (

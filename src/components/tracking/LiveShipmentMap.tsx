@@ -13,7 +13,8 @@ import {
   CheckCircle2, 
   Clock,
   Layers,
-  Sparkles
+  Sparkles,
+  ExternalLink
 } from "lucide-react";
 
 interface LiveShipmentMapProps {
@@ -26,6 +27,8 @@ interface LiveShipmentMapProps {
   originCity?: string;
   destinationCity?: string;
   destinationAddress?: string;
+  isRealtimeBiteship?: boolean;
+  biteshipTrackingPortalUrl?: string | null;
 }
 
 // Coordinates lookup dictionary for Indonesian cities
@@ -98,6 +101,8 @@ export function LiveShipmentMap({
   estimatedDeliveryDate,
   destinationCity = "Jakarta Selatan",
   destinationAddress,
+  isRealtimeBiteship = false,
+  biteshipTrackingPortalUrl,
 }: LiveShipmentMapProps) {
   const origin = INDONESIA_COORDINATES.cikampek;
   const destination = resolveCoordinates(destinationCity);
@@ -218,6 +223,30 @@ export function LiveShipmentMap({
 
         {/* Live Status Pill & Replay Button */}
         <div className="flex items-center gap-2">
+          {isRealtimeBiteship ? (
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+              Biteship Realtime
+            </span>
+          ) : (
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono text-white/50 bg-white/5 border border-white/10">
+              Biteship Radar
+            </span>
+          )}
+
+          {biteshipTrackingPortalUrl && (
+            <a
+              href={biteshipTrackingPortalUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-[11px] font-mono text-white/70 hover:text-white px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
+              title="Buka pelacakan resmi di track.biteship.com"
+            >
+              <span>Biteship Track</span>
+              <ExternalLink className="w-3 h-3 text-white/50" />
+            </a>
+          )}
+
           <span className={`text-xs px-3 py-1 rounded-full border font-semibold tracking-wider uppercase flex items-center gap-1.5 ${badge.color}`}>
             <span className="w-2 h-2 rounded-full bg-current animate-pulse" />
             {badge.label}

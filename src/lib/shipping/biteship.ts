@@ -577,3 +577,181 @@ function calculateOfficialTariff(city: string, province?: string, weightInKg: nu
     },
   ];
 }
+
+export function normalizeCourierCode(name?: string | null): string {
+  if (!name) return "jne";
+  const n = name.toLowerCase();
+  if (n.includes("j&t") || n.includes("jnt")) return "jnt";
+  if (n.includes("sicepat")) return "sicepat";
+  if (n.includes("anteraja")) return "anteraja";
+  if (n.includes("pos")) return "pos";
+  if (n.includes("lion")) return "lion";
+  if (n.includes("tiki")) return "tiki";
+  if (n.includes("gosend") || n.includes("gojek")) return "gosend";
+  if (n.includes("grab")) return "grab";
+  if (n.includes("wahana")) return "wahana";
+  if (n.includes("ninja")) return "ninja";
+  return "jne";
+}
+
+export function mapBiteshipStatus(status?: string | null): string {
+  if (!status) return "IN_TRANSIT";
+  const s = status.toLowerCase();
+  if (s === "allocated" || s === "confirmed" || s === "picking_up") return "PROCESSED";
+  if (s === "picked_up") return "PICKED_UP";
+  if (s === "in_transit" || s === "sorting" || s === "on_process") return "IN_TRANSIT";
+  if (s === "dropping_off" || s === "out_for_delivery" || s === "with_courier") return "OUT_FOR_DELIVERY";
+  if (s === "delivered" || s === "received") return "DELIVERED";
+  if (s === "cancelled" || s === "rejected" || s === "returned") return "CANCELLED";
+  return "IN_TRANSIT";
+}
+
+function getCheckpointTitle(status: string): string {
+  switch (status) {
+    case "PROCESSED":
+      return "Pesanan Disiapkan & Dijadwalkan";
+    case "PICKED_UP":
+      return "Diserahkan ke Kurir";
+    case "IN_TRANSIT":
+      return "Dalam Perjalanan Antar Hub Ekspedisi";
+    case "OUT_FOR_DELIVERY":
+      return "Kurir Menuju Alamat Penerima";
+    case "DELIVERED":
+      return "Paket Berhasil Diterima";
+    case "CANCELLED":
+      return "Pengiriman Dibatalkan";
+    default:
+      return "Pembaruan Status Ekspedisi";
+  }
+}
+
+export interface BiteshipTrackingResult {
+  success: boolean;
+  waybillId?: string;
+  courierCode?: string;
+  courierName?: string;
+  status?: string;
+  rawStatus?: string;
+  currentLocation?: string;
+  estimatedDeliveryDate?: string;
+  driver?: {
+    name?: string;
+    phone?: string;
+    photoUrl?: string;
+    vehicle?: string;
+  };
+  history?: Array<{
+    id: string;
+    timestamp: string;
+    status: string;
+    title: string;
+    location: string;
+    note: string;
+  }>;
+  trackingUrl?: string;
+  error?: string;
+}
+
+/**
+ * Fetch real-time tracking data directly from Biteship Tracking API
+ */
+export async function fetchBiteshipRealtimeTracking(
+  waybillId: string,
+  courierName?: string | null
+): Promise<BiteshipTrackingResult> {
+  const courierCode = normalizeCourierCode(courierName);
+  const cleanWaybill = waybillId.trim();
+
+  // 1. Get API key from database or env
+  const settings = await db.query.siteSettings.findFirst({
+    where: eq(siteSettings.id, "global"),
+  }).catch(() => null);
+
+  const apiKey =
+    settings?.biteshipApiKey ||
+    process.env.BITESHIP_API_KEY ||
+    "biteship_live.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiS2FsYW5hIiwidXNlcklkIjoiNmFjZmU2YTNjMTBhZDAwZmVkYjAyNzM5IiwiaWF0IjoxNzkyMDEwMDAyfQ.nT6V0seMcS7jeyWETM2v97G7I-MH05f_xKfkf6M9sW4";
+
+  const publicTrackingUrl = `https://track.biteship.com/?waybill=${encodeURIComponent(cleanWaybill)}&courier=${courierCode}`;
+
+  if (!apiKey) {
+    return {
+      success: false,
+      waybillId: cleanWaybill,
+      courierCode,
+      trackingUrl: publicTrackingUrl,
+      error: "Biteship API Key belum terkonfigurasi",
+    };
+  }
+
+  try {
+    const res = await fetch(
+      `https://api.biteship.com/v1/trackings/${encodeURIComponent(cleanWaybill)}/couriers/${courierCode}`,
+      {
+        headers: {
+          Authorization: apiKey,
+        },
+        cache: "no-store",
+      }
+    );
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      const internalStatus = mapBiteshipStatus(data.status);
+      const historyList = Array.isArray(data.history)
+        ? data.history.map((h: any, idx: number) => {
+            const st = mapBiteshipStatus(h.status);
+            return {
+              id: `biteship_${idx}_${Date.parse(h.updated_at || new Date().toISOString())}`,
+              timestamp: h.updated_at || new Date().toISOString(),
+              status: st,
+              title: getCheckpointTitle(st),
+              location: h.location || "Rute Ekspedisi",
+              note: h.note || "",
+            };
+          })
+        : [];
+
+      const latestLocation =
+        historyList[0]?.location ||
+        (internalStatus === "DELIVERED" ? "Alamat Penerima" : "Dalam Pengiriman");
+
+      return {
+        success: true,
+        waybillId: cleanWaybill,
+        courierCode,
+        courierName: data.courier?.name || courierName || "JNE",
+        status: internalStatus,
+        rawStatus: data.status,
+        currentLocation: latestLocation,
+        driver: data.courier?.driver_name
+          ? {
+              name: data.courier.driver_name,
+              phone: data.courier.driver_phone,
+              photoUrl: data.courier.driver_photo_url,
+              vehicle: data.courier.vehicle,
+            }
+          : undefined,
+        history: historyList,
+        trackingUrl: data.link || publicTrackingUrl,
+      };
+    }
+
+    return {
+      success: false,
+      waybillId: cleanWaybill,
+      courierCode,
+      trackingUrl: publicTrackingUrl,
+      error: data.error || "Data resi belum terupdate di server ekspedisi",
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      waybillId: cleanWaybill,
+      courierCode,
+      trackingUrl: publicTrackingUrl,
+      error: err.message || "Gagal menghubungi Biteship",
+    };
+  }
+}

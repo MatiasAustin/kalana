@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { v4 as uuidv4 } from "uuid";
 import { requireAdminApi } from "@/lib/auth";
 import { ensureDbSchema } from "@/lib/db/migrate-helper";
+import { fetchBiteshipRealtimeTracking, normalizeCourierCode } from "@/lib/shipping/biteship";
 
 export async function updateOrderStatus(orderId: string, status: string) {
   try {
@@ -287,18 +288,64 @@ export async function getShipmentTracking(orderNumber: string) {
       } catch {}
     }
 
+    let shippingStatus = order.shippingStatus || "PENDING";
+    let currentLocation = order.currentLocation;
+    let courier = order.courier || "JNE Express";
+    let courierService = order.courierService || "Reguler";
+    let trackingNumber = order.trackingNumber;
+    let isRealtimeBiteship = false;
+    let biteshipDriver: any = null;
+
+    const courierCode = normalizeCourierCode(courier);
+    let trackingUrl = order.trackingUrl;
+    if (!trackingUrl && trackingNumber) {
+      trackingUrl = `https://track.biteship.com/?waybill=${encodeURIComponent(trackingNumber)}&courier=${courierCode}`;
+    }
+
+    // Attempt Biteship Realtime Tracking if waybill (trackingNumber) is available
+    if (trackingNumber && trackingNumber.trim().length > 3) {
+      try {
+        const biteshipData = await fetchBiteshipRealtimeTracking(trackingNumber, courier);
+        if (biteshipData.success) {
+          isRealtimeBiteship = true;
+          if (biteshipData.status) {
+            shippingStatus = biteshipData.status;
+          }
+          if (biteshipData.currentLocation) {
+            currentLocation = biteshipData.currentLocation;
+          }
+          if (biteshipData.courierName) {
+            courier = biteshipData.courierName;
+          }
+          if (biteshipData.trackingUrl) {
+            trackingUrl = biteshipData.trackingUrl;
+          }
+          if (biteshipData.driver) {
+            biteshipDriver = biteshipData.driver;
+          }
+          if (biteshipData.history && biteshipData.history.length > 0) {
+            history = biteshipData.history;
+          }
+        } else if (biteshipData.trackingUrl) {
+          trackingUrl = biteshipData.trackingUrl;
+        }
+      } catch (err) {
+        console.warn("[BITESHIP_TRACKING_QUERY_WARNING]", err);
+      }
+    }
+
     return {
       id: order.id,
       orderNumber: order.orderNumber,
       status: order.status,
       paymentStatus: order.paymentStatus,
       fulfillmentStatus: order.fulfillmentStatus,
-      shippingStatus: order.shippingStatus || "PENDING",
-      courier: order.courier,
-      courierService: order.courierService,
-      trackingNumber: order.trackingNumber,
-      trackingUrl: order.trackingUrl,
-      currentLocation: order.currentLocation,
+      shippingStatus,
+      courier,
+      courierService,
+      trackingNumber,
+      trackingUrl,
+      currentLocation,
       estimatedDeliveryDate: order.estimatedDeliveryDate,
       history,
       shippingAddress: order.shippingAddress,
@@ -309,6 +356,11 @@ export async function getShipmentTracking(orderNumber: string) {
       discount: order.discount,
       items: order.items,
       customer: order.customer,
+      isRealtimeBiteship,
+      biteshipDriver,
+      biteshipTrackingPortalUrl: trackingNumber
+        ? `https://track.biteship.com/?waybill=${encodeURIComponent(trackingNumber)}&courier=${courierCode}`
+        : "https://track.biteship.com",
     };
   } catch (error) {
     console.error("[GET_SHIPMENT_TRACKING_ERROR]", error);

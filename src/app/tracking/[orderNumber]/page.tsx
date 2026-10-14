@@ -92,8 +92,9 @@ export default async function TrackingDetailPage({
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] font-mono tracking-widest uppercase bg-kalana-black text-kalana-offwhite px-2.5 py-0.5 rounded-full">
-                Live Shipment Radar
+              <span className="text-[10px] font-mono tracking-widest uppercase bg-kalana-black text-kalana-offwhite px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Live Biteship Radar
               </span>
               <span className="text-[10px] font-mono tracking-widest uppercase text-kalana-black/50">
                 Order #{trackingData.orderNumber}
@@ -128,6 +129,8 @@ export default async function TrackingDetailPage({
             estimatedDeliveryDate={trackingData.estimatedDeliveryDate}
             destinationCity={destinationCity}
             destinationAddress={destinationAddress}
+            isRealtimeBiteship={trackingData.isRealtimeBiteship}
+            biteshipTrackingPortalUrl={trackingData.biteshipTrackingPortalUrl}
           />
         </section>
 
@@ -144,6 +147,9 @@ export default async function TrackingDetailPage({
               history={trackingData.history}
               destinationCity={destinationCity}
               destinationAddress={destinationAddress}
+              isRealtimeBiteship={trackingData.isRealtimeBiteship}
+              biteshipTrackingPortalUrl={trackingData.biteshipTrackingPortalUrl}
+              biteshipDriver={trackingData.biteshipDriver}
             />
           </div>
 
