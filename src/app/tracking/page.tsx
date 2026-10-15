@@ -21,7 +21,7 @@ export default function TrackingSearchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-kalana-offwhite text-kalana-black pt-36 pb-24 px-6 lg:px-12">
+    <div className="min-h-screen bg-kalana-offwhite text-kalana-black pt-32 sm:pt-36 pb-24 px-4 sm:px-6 lg:px-12">
       <div className="max-w-xl mx-auto space-y-12">
         
         {/* Header Branding */}

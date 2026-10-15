@@ -33,7 +33,7 @@ export function CustomerTrackingShareCard({ orderNumber }: CustomerTrackingShare
   };
 
   return (
-    <div className="bg-stone-900 text-stone-100 p-6 rounded-lg space-y-5 shadow-lg border border-stone-800">
+    <div className="bg-stone-900 text-stone-100 p-4 sm:p-6 rounded-lg space-y-5 shadow-lg border border-stone-800">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-stone-800 pb-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center shrink-0">

@@ -9,7 +9,7 @@ export default async function GoodsPage() {
     : ["Apparel", "Coffee Tools", "Bags", "Accessories", "Objects"];
 
   return (
-    <div className="w-full bg-kalana-offwhite text-kalana-black pt-24 min-h-screen flex flex-col relative overflow-hidden">
+    <div className="w-full bg-kalana-offwhite text-kalana-black pt-28 sm:pt-36 min-h-screen flex flex-col relative overflow-hidden">
       
       <div className="absolute top-1/2 left-6 -translate-y-1/2 vertical-text text-[10px] tracking-[0.2em] uppercase text-kalana-black/30 hidden lg:block rotate-180 z-20">
         {page.eyebrow || "04 / Goods"}

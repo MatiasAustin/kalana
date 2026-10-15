@@ -72,7 +72,7 @@ export function WorkshopsListClient({ events }: WorkshopsListClientProps) {
           {filteredEvents.map((event, i) => (
             <div
               key={event.id}
-              className="group flex flex-col lg:flex-row justify-between lg:items-center gap-8 border-t border-kalana-black/20 py-12 hover:bg-kalana-black/5 transition-colors px-4 -mx-4"
+              className="group flex flex-col lg:flex-row justify-between lg:items-center gap-8 border-t border-kalana-black/20 py-12 hover:bg-kalana-black/5 transition-colors px-2 sm:px-4"
             >
               {/* Left Column: Number, Date, Category */}
               <div className="lg:w-1/4 flex flex-col gap-2">

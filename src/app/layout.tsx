@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
@@ -11,6 +11,12 @@ import { getSiteSettings } from "@/lib/cms-api";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const dynamic = "force-dynamic";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 import { normalizeImageUrl } from "@/lib/image-util";
 
@@ -53,11 +59,11 @@ export default async function RootLayout({
           <link rel="shortcut icon" href={favicon} />
           <link rel="apple-touch-icon" href={favicon} />
         </head>
-        <body className={`${inter.variable} font-sans antialiased bg-kalana-offwhite text-kalana-black min-h-screen flex flex-col`}>
+        <body className={`${inter.variable} font-sans antialiased bg-kalana-offwhite text-kalana-black min-h-screen flex flex-col w-full max-w-full overflow-x-hidden`}>
           <StorefrontOnly>
             <Header />
           </StorefrontOnly>
-          <main className="flex-grow">
+          <main className="flex-grow w-full max-w-full overflow-x-hidden">
             {children}
           </main>
           <StorefrontOnly>

@@ -16,8 +16,8 @@ export default async function JournalIndexPage() {
   const publishedArticles = articles.filter((a) => a.status === "PUBLISHED");
 
   return (
-    <div className="w-full bg-kalana-offwhite text-kalana-black pt-32 pb-24 min-h-screen">
-      <div className="container mx-auto px-6 lg:px-12 max-w-6xl">
+    <div className="w-full bg-kalana-offwhite text-kalana-black pt-32 sm:pt-36 pb-24 min-h-screen">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-12 max-w-6xl">
         {/* Back Link */}
         <Link
           href="/"

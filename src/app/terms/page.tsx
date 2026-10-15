@@ -6,8 +6,8 @@ export default async function TermsPage() {
   const page = await getPageContent("terms");
 
   return (
-    <div className="w-full bg-kalana-offwhite text-kalana-black pt-32 pb-24 min-h-screen">
-      <div className="container mx-auto px-6 lg:px-12 max-w-4xl">
+    <div className="w-full bg-kalana-offwhite text-kalana-black pt-32 sm:pt-36 pb-24 min-h-screen">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-12 max-w-4xl">
         <Link href="/" className="inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-kalana-black/50 hover:text-kalana-black mb-12">
           <ArrowLeft className="w-4 h-4" /> Back to Store
         </Link>

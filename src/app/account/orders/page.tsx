@@ -46,8 +46,8 @@ export default async function CustomerOrdersPage() {
   }
 
   return (
-    <div className="container mx-auto px-6 py-32 min-h-screen">
-      <Link href="/account" className="inline-flex items-center text-[10px] tracking-widest uppercase text-kalana-black/60 hover:text-kalana-black mb-12">
+    <div className="container mx-auto px-4 sm:px-6 pt-32 sm:pt-36 pb-24 min-h-screen">
+      <Link href="/account" className="inline-flex items-center text-[10px] tracking-widest uppercase text-kalana-black/60 hover:text-kalana-black mb-8 sm:mb-12">
         <ArrowLeft className="w-3 h-3 mr-2" />
         Back to Account
       </Link>

@@ -68,10 +68,10 @@ export default async function RoasteryPage() {
   );
 
   return (
-    <div className="w-full bg-kalana-offwhite pt-32 text-kalana-black min-h-screen">
+    <div className="w-full bg-kalana-offwhite pt-32 sm:pt-40 text-kalana-black min-h-screen">
       
       {/* Editorial Hero Section */}
-      <section className="relative w-full px-6 lg:px-12 mb-32">
+      <section className="relative w-full px-4 sm:px-6 lg:px-12 mb-20 sm:mb-32">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 border-b border-kalana-black/20 pb-24 items-end">
           <div className="lg:col-span-7 flex flex-col justify-between">
             <div>

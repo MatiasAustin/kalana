@@ -4,20 +4,20 @@ export default async function AboutPage() {
   const page = await getPageContent("about");
 
   return (
-    <div className="w-full bg-kalana-offwhite text-kalana-black pt-32 pb-24 min-h-screen relative overflow-hidden">
+    <div className="w-full bg-kalana-offwhite text-kalana-black pt-32 sm:pt-36 pb-24 min-h-screen relative overflow-hidden">
       
       <div className="absolute top-1/2 left-6 -translate-y-1/2 vertical-text text-[10px] tracking-[0.2em] uppercase text-kalana-black/30 hidden lg:block rotate-180">
         {page.eyebrow || "05 / About"}
       </div>
 
-      <div className="container mx-auto px-6 lg:px-12">
-        <div className="flex justify-between items-end border-b border-kalana-black/20 pb-8 mb-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-12">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 border-b border-kalana-black/20 pb-8 mb-16 sm:mb-24">
           <h1 
-            className="text-5xl md:text-7xl font-semibold tracking-tighter uppercase leading-none"
+            className="text-4xl sm:text-5xl md:text-7xl font-semibold tracking-tighter uppercase leading-none"
             dangerouslySetInnerHTML={{ __html: page.title || "About<br/>Kalana." }}
           />
           <p 
-            className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 text-right"
+            className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 text-left sm:text-right font-mono"
             dangerouslySetInnerHTML={{ __html: page.subtitle || "Brand Story<br/>Est. 2026" }}
           />
         </div>

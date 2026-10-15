@@ -17,11 +17,39 @@
   --foreground: #111111; /* Black */
 }
 
+html {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+}
+
 body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+  position: relative;
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Prevent accidental horizontal overflow on mobile from images, svgs, tables and long text */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+img, video, canvas, svg {
+  max-width: 100%;
+}
+
+pre, code, table {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+p, h1, h2, h3, h4, h5, h6, span, a {
+  overflow-wrap: break-word;
 }
 
 /* Hide scrollbar for clean UI but keep functionality */

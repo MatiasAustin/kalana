@@ -12,12 +12,12 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="w-full bg-kalana-offwhite text-kalana-black min-h-[80vh] flex flex-col items-center justify-center pt-32 px-6 text-center">
-        <p className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 mb-8">Status: Empty</p>
-        <h1 className="text-5xl md:text-7xl font-semibold tracking-tighter uppercase mb-12">Your Cart<br/>Is Empty.</h1>
+      <div className="w-full bg-kalana-offwhite text-kalana-black min-h-[80vh] flex flex-col items-center justify-center pt-32 sm:pt-40 px-4 sm:px-6 text-center">
+        <p className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 mb-8 font-mono">Status: Empty</p>
+        <h1 className="text-4xl sm:text-5xl md:text-7xl font-semibold tracking-tighter uppercase mb-12">Your Cart<br/>Is Empty.</h1>
         <Link 
           href="/roastery" 
-          className="text-[10px] font-semibold tracking-[0.2em] uppercase border-b border-kalana-black pb-1 hover:opacity-50 transition-opacity"
+          className="text-[10px] font-semibold tracking-[0.2em] uppercase border-b border-kalana-black pb-1 hover:opacity-50 transition-opacity font-mono"
         >
           Explore Roastery →
         </Link>
@@ -26,16 +26,16 @@ export default function CartPage() {
   }
 
   return (
-    <div className="w-full bg-kalana-offwhite text-kalana-black pt-32 pb-24 min-h-screen relative overflow-hidden">
+    <div className="w-full bg-kalana-offwhite text-kalana-black pt-32 sm:pt-40 pb-24 min-h-screen relative overflow-hidden">
       
       <div className="absolute top-1/2 left-6 -translate-y-1/2 vertical-text text-[10px] tracking-[0.2em] uppercase text-kalana-black/30 hidden lg:block rotate-180">
         Cart / {items.length} Items
       </div>
 
-      <div className="container mx-auto px-6 lg:px-12">
-        <div className="flex justify-between items-end border-b border-kalana-black/20 pb-8 mb-24">
-          <h1 className="text-5xl md:text-7xl font-semibold tracking-tighter uppercase leading-none">Your Cart.</h1>
-          <p className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-12">
+        <div className="flex justify-between items-end border-b border-kalana-black/20 pb-8 mb-16 sm:mb-24">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-semibold tracking-tighter uppercase leading-none">Your Cart.</h1>
+          <p className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 font-mono">
             {items.length} Items
           </p>
         </div>

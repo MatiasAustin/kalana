@@ -55,7 +55,7 @@ export default async function Home() {
     <div className="w-full bg-kalana-offwhite text-kalana-black">
       
       {/* 1. HERO SECTION */}
-      <section className="relative min-h-[100vh] w-full pt-32 pb-24 px-6 lg:px-12 flex flex-col justify-between border-b border-kalana-black/20">
+      <section className="relative min-h-[100vh] w-full pt-32 sm:pt-40 pb-20 sm:pb-24 px-4 sm:px-6 lg:px-12 flex flex-col justify-between border-b border-kalana-black/20 overflow-hidden">
         
         {/* Floating Metadata */}
         <div className="absolute top-32 right-12 text-[10px] tracking-[0.2em] uppercase text-kalana-black/60 text-right hidden lg:block">
@@ -71,7 +71,7 @@ export default async function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mt-12 lg:mt-24 flex-grow">
           <div className="lg:col-span-7 flex flex-col justify-center relative z-20">
             <h1 
-              className="text-[12vw] lg:text-[140px] font-semibold tracking-tighter leading-[0.85] uppercase mb-12"
+              className="text-[12vw] sm:text-[10vw] lg:text-[140px] font-semibold tracking-tighter leading-[0.85] uppercase mb-12 break-words"
               dangerouslySetInnerHTML={{ __html: homepage.hero.headline }}
             />
             <div className="flex flex-col sm:flex-row gap-8 sm:items-center">

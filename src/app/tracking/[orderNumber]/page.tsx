@@ -68,7 +68,7 @@ export default async function TrackingDetailPage({
   const destinationAddress = shippingAddr ? `${shippingAddr.address1}${shippingAddr.city ? `, ${shippingAddr.city}` : ""}` : undefined;
 
   return (
-    <div className="min-h-screen bg-kalana-offwhite text-kalana-black pt-28 pb-24 px-6 lg:px-12 font-sans">
+    <div className="min-h-screen bg-kalana-offwhite text-kalana-black pt-32 sm:pt-36 pb-24 px-4 sm:px-6 lg:px-12 font-sans">
       <div className="max-w-5xl mx-auto space-y-10">
         
         {/* Navigation Bar */}

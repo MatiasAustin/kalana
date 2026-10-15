@@ -60,12 +60,12 @@ export default async function WorkshopsPage() {
   });
 
   return (
-    <div className="w-full bg-kalana-offwhite text-kalana-black pt-32 pb-24 min-h-screen relative overflow-hidden">
+    <div className="w-full bg-kalana-offwhite text-kalana-black pt-32 sm:pt-36 pb-24 min-h-screen relative overflow-hidden">
       <div className="absolute top-1/2 right-6 -translate-y-1/2 vertical-text text-[10px] tracking-[0.2em] uppercase text-kalana-black/30 hidden lg:block">
         {page.eyebrow || "03 / Workshops"}
       </div>
 
-      <div className="container mx-auto px-6 lg:px-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-12">
         {/* Back Link */}
         <Link
           href="/space"

@@ -51,20 +51,20 @@ export default function HeaderClient({ navLinks, brandName, logoUrl, location, s
 
         <header
           className={clsx(
-            "transition-all duration-500",
+            "transition-all duration-300",
             isScrolled
-              ? "bg-kalana-offwhite/90 backdrop-blur-md py-4 border-b border-kalana-black/10"
-              : "bg-transparent py-7 border-b border-transparent"
+              ? "bg-kalana-offwhite/95 backdrop-blur-md py-3 sm:py-4 border-b border-kalana-black/10 shadow-2xs"
+              : "bg-kalana-offwhite/80 md:bg-transparent backdrop-blur-xs md:backdrop-blur-none py-3 sm:py-6 border-b border-kalana-black/5 md:border-transparent"
           )}
         >
-          <div className="container mx-auto px-6 lg:px-12 flex items-center justify-between">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-12 flex items-center justify-between">
             {/* Logo */}
             <Link href="/" className="z-50 group flex items-center gap-2">
             {logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoUrl} alt={brandName || "KALANA"} className="h-7 sm:h-8 w-auto object-contain max-h-9" />
+              <img src={logoUrl} alt={brandName || "KALANA"} className="h-6 sm:h-8 w-auto object-contain max-h-8 sm:max-h-9" />
             ) : (
-              <span className="text-sm font-bold tracking-[0.2em] uppercase text-kalana-black group-hover:opacity-70 transition-opacity">
+              <span className="text-xs sm:text-sm font-bold tracking-[0.2em] uppercase text-kalana-black group-hover:opacity-70 transition-opacity">
                 {brandName}
               </span>
             )}
@@ -84,7 +84,7 @@ export default function HeaderClient({ navLinks, brandName, logoUrl, location, s
           </nav>
 
           {/* Right Actions */}
-          <div className="flex items-center space-x-6 md:space-x-8 z-50">
+          <div className="flex items-center space-x-4 sm:space-x-6 md:space-x-8 z-50">
             <button className="hidden md:block text-kalana-black hover:opacity-60 transition-opacity">
               <Search className="w-4 h-4" strokeWidth={1.5} />
             </button>
@@ -108,7 +108,8 @@ export default function HeaderClient({ navLinks, brandName, logoUrl, location, s
             </button>
             <button 
               onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden text-kalana-black"
+              className="md:hidden text-kalana-black p-1 hover:opacity-60 transition-opacity"
+              aria-label="Open navigation menu"
             >
               <Menu className="w-5 h-5" strokeWidth={1.5} />
             </button>
@@ -124,44 +125,69 @@ export default function HeaderClient({ navLinks, brandName, logoUrl, location, s
             initial={{ opacity: 0, y: "-100%" }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: "-100%" }}
-            transition={{ type: "tween", duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
-            className="fixed inset-0 z-50 bg-kalana-offwhite flex flex-col pt-24 px-6 pb-12"
+            transition={{ type: "tween", duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
+            className="fixed inset-0 z-50 bg-kalana-offwhite flex flex-col pt-20 px-6 pb-12 overflow-y-auto"
           >
             <button 
               onClick={() => setMobileMenuOpen(false)}
-              className="absolute top-8 right-6 p-2 text-kalana-black"
+              className="absolute top-6 right-6 p-2 text-kalana-black hover:opacity-60 transition-opacity"
+              aria-label="Close navigation menu"
             >
-              <X className="w-6 h-6" strokeWidth={1} />
+              <X className="w-6 h-6" strokeWidth={1.5} />
             </button>
             
-            <div className="text-[10px] tracking-widest text-kalana-black/40 uppercase mb-12">
-              Menu / 001
+            <div className="text-[10px] tracking-widest text-kalana-black/40 uppercase mb-8 font-mono">
+              Menu / Navigation
             </div>
 
-            <nav className="flex flex-col space-y-6">
+            <nav className="flex flex-col space-y-5 mb-10">
               {navLinks.map((link: any, idx: number) => (
                 <Link 
                   key={link.url} 
                   href={link.url}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-4xl md:text-6xl font-medium tracking-tight text-kalana-black flex items-center gap-6 group"
+                  className="text-3xl sm:text-5xl font-medium tracking-tight text-kalana-black flex items-center gap-4 group"
                 >
-                  <span className="text-xs text-kalana-black/30 font-normal w-6">0{idx + 1}</span>
-                  <span className="group-hover:translate-x-4 transition-transform duration-300">{link.label}</span>
+                  <span className="text-xs text-kalana-black/30 font-mono w-6">0{idx + 1}</span>
+                  <span className="group-hover:translate-x-2 transition-transform duration-300">{link.label}</span>
                 </Link>
               ))}
+
+              {/* Mobile Tracking Link */}
+              <Link 
+                href="/tracking"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-3xl sm:text-5xl font-medium tracking-tight text-kalana-black flex items-center gap-4 group"
+              >
+                <span className="text-xs text-kalana-black/30 font-mono w-6">0{navLinks.length + 1}</span>
+                <span className="group-hover:translate-x-2 transition-transform duration-300">Tracking Radar</span>
+              </Link>
+
+              {/* Mobile Account Link */}
+              <Link 
+                href={isLoaded && isSignedIn ? "/account" : "/login"}
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-3xl sm:text-5xl font-medium tracking-tight text-kalana-black flex items-center gap-4 group"
+              >
+                <span className="text-xs text-kalana-black/30 font-mono w-6">0{navLinks.length + 2}</span>
+                <span className="group-hover:translate-x-2 transition-transform duration-300">
+                  {isLoaded && isSignedIn ? "My Account" : "Sign In"}
+                </span>
+              </Link>
             </nav>
             
-            <div className="mt-auto pt-12 border-t border-kalana-black/10 flex justify-between items-end">
+            <div className="mt-auto pt-8 border-t border-kalana-black/10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 font-mono">
               <div>
-                <p className="text-[10px] tracking-widest text-kalana-black/50 uppercase mb-2">Location</p>
-                <p className="text-sm tracking-wide">{location.address}, {location.province}</p>
+                <p className="text-[10px] tracking-widest text-kalana-black/50 uppercase mb-1">Location</p>
+                <p className="text-xs tracking-wide">{location?.address || "Cikampek"}, {location?.province || "Jawa Barat"}</p>
               </div>
-              <div className="text-right">
-                <p className="text-[10px] tracking-widest text-kalana-black/50 uppercase mb-2">Socials</p>
+              <div className="text-left sm:text-right">
+                <p className="text-[10px] tracking-widest text-kalana-black/50 uppercase mb-1">Socials</p>
                 <div className="flex gap-4 text-xs uppercase tracking-widest">
-                  {socialLinks.map((social: any) => (
-                    <Link key={social.platform} href={social.url}>{social.platform.substring(0, 2).toUpperCase()}</Link>
+                  {socialLinks?.map((social: any) => (
+                    <Link key={social.platform} href={social.url} target="_blank" rel="noreferrer" className="hover:opacity-60 transition-opacity">
+                      {social.platform.substring(0, 2).toUpperCase()}
+                    </Link>
                   ))}
                 </div>
               </div>

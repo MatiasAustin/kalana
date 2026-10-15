@@ -151,7 +151,7 @@ export default function CheckoutPage() {
 
   if (!isSignedIn && !guestMode) {
     return (
-      <div className="min-h-screen bg-kalana-offwhite text-kalana-black flex items-center justify-center">
+      <div className="min-h-screen bg-kalana-offwhite text-kalana-black flex items-center justify-center pt-28 sm:pt-36 pb-16 px-6">
         <div className="max-w-md w-full px-6 flex flex-col items-center">
           <h1 className="text-3xl font-medium tracking-tight mb-8">Checkout</h1>
           <div className="w-full space-y-4">
@@ -169,10 +169,10 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-kalana-offwhite text-kalana-black flex flex-col md:flex-row pt-20">
+    <div className="min-h-screen bg-kalana-offwhite text-kalana-black flex flex-col md:flex-row pt-28 sm:pt-36">
       
       {/* Left Form Section */}
-      <div className="w-full md:w-3/5 p-6 lg:p-16 lg:pr-24 overflow-y-auto order-2 md:order-1">
+      <div className="w-full md:w-3/5 p-4 sm:p-6 lg:p-16 lg:pr-24 overflow-y-auto order-2 md:order-1">
         <div className="max-w-2xl ml-auto">
           
           <Link href="/" className="inline-block text-2xl font-semibold tracking-tighter uppercase mb-8 hover:opacity-50 transition-opacity">
@@ -389,7 +389,7 @@ export default function CheckoutPage() {
       </div>
 
       {/* Right Summary Section */}
-      <div className="w-full md:w-2/5 bg-kalana-black/5 border-l border-kalana-black/20 p-6 lg:p-16 order-1 md:order-2">
+      <div className="w-full md:w-2/5 bg-kalana-black/5 border-l border-kalana-black/20 p-4 sm:p-6 lg:p-16 order-1 md:order-2">
         <div className="max-w-md mr-auto">
           <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] mb-12 text-kalana-black border-b border-kalana-black/20 pb-4">Order Summary</h2>
           

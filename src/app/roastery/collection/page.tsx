@@ -34,19 +34,19 @@ export default function CollectionsPage() {
   ];
 
   return (
-    <div className="w-full bg-kalana-offwhite text-kalana-black pt-32 pb-24 min-h-screen relative overflow-hidden">
+    <div className="w-full bg-kalana-offwhite text-kalana-black pt-32 sm:pt-36 pb-24 min-h-screen relative overflow-hidden">
       
       <div className="absolute top-1/2 right-6 -translate-y-1/2 vertical-text text-[10px] tracking-[0.2em] uppercase text-kalana-black/30 hidden lg:block">
         02 / Collections
       </div>
 
-      <div className="container mx-auto px-6 lg:px-12">
-        <div className="flex justify-between items-end border-b border-kalana-black/20 pb-8 mb-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-12">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 border-b border-kalana-black/20 pb-8 mb-16 sm:mb-24">
           <div>
-            <p className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 mb-4">Roastery</p>
-            <h1 className="text-5xl md:text-7xl font-semibold tracking-tighter uppercase leading-none">Collections.</h1>
+            <p className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 mb-4 font-mono">Roastery</p>
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-semibold tracking-tighter uppercase leading-none">Collections.</h1>
           </div>
-          <p className="text-sm font-light text-kalana-black/70 max-w-xs text-right">
+          <p className="text-xs sm:text-sm font-light text-kalana-black/70 max-w-xs text-left sm:text-right">
             Our approach to coffee is structured. Each series serves a specific purpose in the daily ritual.
           </p>
         </div>

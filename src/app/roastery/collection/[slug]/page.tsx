@@ -11,23 +11,23 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
   }
 
   return (
-    <div className="w-full bg-kalana-offwhite text-kalana-black pt-32 pb-24 min-h-screen relative overflow-hidden">
+    <div className="w-full bg-kalana-offwhite text-kalana-black pt-32 sm:pt-36 pb-24 min-h-screen relative overflow-hidden">
       
       <div className="absolute top-1/2 right-6 -translate-y-1/2 vertical-text text-[10px] tracking-[0.2em] uppercase text-kalana-black/30 hidden lg:block">
         02 / Daily Series
       </div>
 
-      <div className="container mx-auto px-6 lg:px-12">
-        <div className="flex justify-between items-end border-b border-kalana-black/20 pb-8 mb-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-12">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-kalana-black/20 pb-8 mb-16 sm:mb-24">
           <div>
-            <div className="flex items-center text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 mb-6">
+            <div className="flex items-center text-[10px] tracking-[0.2em] uppercase text-kalana-black/50 mb-6 font-mono">
               <Link href="/roastery" className="hover:text-kalana-black transition-colors">Roastery</Link>
               <span className="mx-2">/</span>
               <Link href="/roastery/collection" className="hover:text-kalana-black transition-colors">Collection</Link>
             </div>
-            <h1 className="text-6xl md:text-8xl font-semibold tracking-tighter uppercase leading-none">Daily<br/>Series.</h1>
+            <h1 className="text-4xl sm:text-6xl md:text-8xl font-semibold tracking-tighter uppercase leading-none">Daily<br/>Series.</h1>
           </div>
-          <p className="text-sm font-light text-kalana-black/70 max-w-sm border-l border-kalana-black/20 pl-6 hidden md:block">
+          <p className="text-xs sm:text-sm font-light text-kalana-black/70 max-w-sm border-l border-kalana-black/20 pl-4 sm:pl-6 block">
             Everyday blends designed for consistency, versatility, and easy drinking. Built to perform across espresso, americano, and milk-based coffee.
           </p>
         </div>

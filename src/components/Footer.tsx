@@ -15,7 +15,7 @@ export default async function Footer() {
       <div className="container mx-auto px-6 lg:px-12">
         
         {/* Top minimal metadata */}
-        <div className="flex justify-between items-center text-[10px] tracking-widest uppercase text-kalana-black/50 mb-16">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-[10px] tracking-widest uppercase text-kalana-black/50 mb-16">
           <span>{settings.brandName} &copy; {new Date().getFullYear()}</span>
           <span>{location.address}, {location.province}</span>
           <span className="hidden sm:inline">All Rights Reserved</span>

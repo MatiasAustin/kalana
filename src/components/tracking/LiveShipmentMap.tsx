@@ -216,7 +216,7 @@ export function LiveShipmentMap({
     <div className="relative w-full rounded-2xl overflow-hidden border border-kalana-black/20 shadow-2xl bg-[#0d0f12] text-white">
       
       {/* Top Map Header Bar */}
-      <div className="p-4 sm:p-5 border-b border-white/10 bg-[#14171d]/90 backdrop-blur-md flex flex-wrap items-center justify-between gap-3">
+      <div className="p-3 sm:p-5 border-b border-white/10 bg-[#14171d]/90 backdrop-blur-md flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center border border-white/10">
             <Truck className="w-4 h-4 text-white" />
@@ -282,7 +282,7 @@ export function LiveShipmentMap({
       </div>
 
       {/* Interactive Map Visual Area */}
-      <div className="relative w-full aspect-[16/9] min-h-[360px] sm:min-h-[440px] bg-[#090b0e] overflow-hidden select-none">
+      <div className="relative w-full aspect-[16/9] min-h-[300px] sm:min-h-[440px] bg-[#090b0e] overflow-hidden select-none">
         
         {/* Subtle Map Grid & Topographic Radar Grid Overlay */}
         <div 

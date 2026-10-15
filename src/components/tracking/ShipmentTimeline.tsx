@@ -67,10 +67,10 @@ export function ShipmentTimeline({
   };
 
   return (
-    <div className="bg-white border border-kalana-black/15 rounded-xl p-6 sm:p-8 space-y-8 shadow-sm">
+    <div className="bg-white border border-kalana-black/15 rounded-xl p-4 sm:p-8 space-y-6 sm:space-y-8 shadow-sm">
       
       {/* Courier & AWB Card */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-kalana-offwhite/80 border border-kalana-black/10 rounded-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 bg-kalana-offwhite/80 border border-kalana-black/10 rounded-lg">
         <div>
           <span className="text-[10px] font-mono tracking-widest uppercase text-kalana-black/50 block mb-1">
             Jasa Kirim & Layanan
@@ -98,7 +98,7 @@ export function ShipmentTimeline({
             <span className="text-[10px] font-mono tracking-widest uppercase text-kalana-black/50">
               Nomor Resi / AWB
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="font-mono font-bold text-sm bg-white px-3 py-1.5 border border-kalana-black/20 rounded">
                 {trackingNumber}
               </span>

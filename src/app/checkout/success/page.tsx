@@ -46,7 +46,7 @@ export default async function CheckoutSuccessPage({ searchParams }: SuccessPageP
   const canCancel = orderData && !isCancelled && orderData?.fulfillmentStatus !== "FULFILLED" && !["PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED"].includes(orderData?.shippingStatus);
 
   return (
-    <div className="min-h-screen bg-kalana-offwhite text-kalana-black pt-28 pb-24 px-6 lg:px-12">
+    <div className="min-h-screen bg-kalana-offwhite text-kalana-black pt-32 sm:pt-36 pb-24 px-4 sm:px-6 lg:px-12">
       <div className="max-w-3xl mx-auto">
         
         {/* Header Branding */}

@@ -63,21 +63,21 @@ export default function ProductClient({ product }: { product: any }) {
   };
 
   return (
-    <div className="w-full bg-kalana-offwhite pt-32 pb-24 text-kalana-black min-h-screen">
+    <div className="w-full bg-kalana-offwhite pt-32 sm:pt-36 pb-24 text-kalana-black min-h-screen">
       
       {/* Editorial Breadcrumbs */}
-      <div className="container mx-auto px-6 lg:px-12 mb-12 flex justify-between items-center border-b border-kalana-black/20 pb-4">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-12 mb-8 sm:mb-12 flex justify-between items-center border-b border-kalana-black/20 pb-4">
         <div className="flex gap-4 text-[10px] tracking-[0.2em] uppercase text-kalana-black/50">
           <Link href="/roastery" className="hover:text-kalana-black transition-colors">Shop</Link>
           <span>/</span>
           <span className="text-kalana-black">{product.name}</span>
         </div>
-        <div className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/30">
+        <div className="text-[10px] tracking-[0.2em] uppercase text-kalana-black/30 font-mono">
           SKU: {selectedVariant?.sku || product.id}
         </div>
       </div>
 
-      <div className="container mx-auto px-6 lg:px-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-12">
         {/* Split Composition */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-0 border-b border-kalana-black/20 pb-24 mb-24">
           

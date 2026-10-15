@@ -44,8 +44,8 @@ export default async function JournalArticlePage({ params }: ArticlePageProps) {
     .slice(0, 2);
 
   return (
-    <div className="w-full bg-kalana-offwhite text-kalana-black pt-32 pb-24 min-h-screen">
-      <div className="container mx-auto px-6 lg:px-12 max-w-4xl">
+    <div className="w-full bg-kalana-offwhite text-kalana-black pt-32 sm:pt-36 pb-24 min-h-screen">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-12 max-w-4xl">
         {/* Back Link */}
         <Link
           href="/journal"
