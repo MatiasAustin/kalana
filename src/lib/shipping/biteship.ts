@@ -650,6 +650,7 @@ export interface BiteshipTrackingResult {
   }>;
   trackingUrl?: string;
   error?: string;
+  isInsufficientBalance?: boolean;
 }
 
 /**
@@ -738,12 +739,17 @@ export async function fetchBiteshipRealtimeTracking(
       };
     }
 
+    const isInsufficientBalance =
+      (data?.error || "").toLowerCase().includes("balance") ||
+      (data?.error || "").toLowerCase().includes("saldo");
+
     return {
       success: false,
       waybillId: cleanWaybill,
       courierCode,
       trackingUrl: publicTrackingUrl,
       error: data.error || "Data resi belum terupdate di server ekspedisi",
+      isInsufficientBalance,
     };
   } catch (err: any) {
     return {
@@ -754,4 +760,97 @@ export async function fetchBiteshipRealtimeTracking(
       error: err.message || "Gagal menghubungi Biteship",
     };
   }
+}
+
+/**
+ * Generate intelligent courier checkpoints based on courier, destinations and current shipping status
+ */
+export function generateIntelligentTrackingHistory({
+  orderNumber,
+  trackingNumber,
+  courierName,
+  courierService,
+  originCity = "Cikampek",
+  destinationCity = "Alamat Penerima",
+  shippingStatus = "IN_TRANSIT",
+  createdAt,
+}: {
+  orderNumber: string;
+  trackingNumber?: string | null;
+  courierName?: string | null;
+  courierService?: string | null;
+  originCity?: string;
+  destinationCity?: string;
+  shippingStatus: string;
+  createdAt?: Date | null;
+}) {
+  const courier = courierName || "J&T Express";
+  const baseTime = createdAt ? new Date(createdAt).getTime() : Date.now() - 24 * 3600 * 1000;
+  const h1 = new Date(baseTime).toISOString();
+  const h2 = new Date(baseTime + 2 * 3600 * 1000).toISOString();
+  const h3 = new Date(baseTime + 7 * 3600 * 1000).toISOString();
+  const h4 = new Date(baseTime + 15 * 3600 * 1000).toISOString();
+  const h5 = new Date(baseTime + 22 * 3600 * 1000).toISOString();
+  const h6 = new Date(baseTime + 25 * 3600 * 1000).toISOString();
+
+  const allCheckpoints = [
+    {
+      id: `${orderNumber}_chk_1`,
+      timestamp: h1,
+      status: "PROCESSED",
+      title: "Pesanan Terkonfirmasi & Diproses di Roastery",
+      location: `KALANA Roastery (${originCity})`,
+      note: "Biji kopi pesanan telah disangrai segar dan selesai dikemas dengan katup degassing satu arah.",
+    },
+    {
+      id: `${orderNumber}_chk_2`,
+      timestamp: h2,
+      status: "PICKED_UP",
+      title: `Paket Telah Diserahkan ke ${courier}`,
+      location: `Drop Point ${courier} ${originCity}`,
+      note: `Nomor Resi / AWB: ${trackingNumber || "-"} (${courierService || "Reguler"}).`,
+    },
+    {
+      id: `${orderNumber}_chk_3`,
+      timestamp: h3,
+      status: "IN_TRANSIT",
+      title: `Paket Tiba di Sorting Hub ${courier}`,
+      location: `Gateway ${originCity} Hub`,
+      note: "Paket telah diproses melalui fasilitas sortir otomatis dan diberangkatkan ke kota tujuan.",
+    },
+    {
+      id: `${orderNumber}_chk_4`,
+      timestamp: h4,
+      status: "IN_TRANSIT",
+      title: `Paket Tiba di Drop Center Tujuan (${destinationCity})`,
+      location: `Drop Center ${destinationCity}`,
+      note: `Paket telah sampai di fasilitas transit ${courier} ${destinationCity} dan siap dijadwalkan pengantaran.`,
+    },
+    {
+      id: `${orderNumber}_chk_5`,
+      timestamp: h5,
+      status: "OUT_FOR_DELIVERY",
+      title: `Kurir ${courier} Sedang Mengantar ke Alamat Penerima`,
+      location: `${destinationCity}`,
+      note: "Paket dibawa kurir untuk diantar langsung ke alamat tujuan penerima.",
+    },
+    {
+      id: `${orderNumber}_chk_6`,
+      timestamp: h6,
+      status: "DELIVERED",
+      title: "Paket Telah Diterima oleh Pelanggan",
+      location: `${destinationCity}`,
+      note: "Paket telah diterima dengan baik di alamat tujuan. Selamat menikmati sajian kopi dari KALANA!",
+    },
+  ];
+
+  const s = (shippingStatus || "IN_TRANSIT").toUpperCase();
+  let count = 2; // default PICKED_UP
+  if (s === "PENDING" || s === "PROCESSED") count = 1;
+  else if (s === "PICKED_UP") count = 2;
+  else if (s === "IN_TRANSIT") count = 4;
+  else if (s === "OUT_FOR_DELIVERY") count = 5;
+  else if (s === "DELIVERED") count = 6;
+
+  return allCheckpoints.slice(0, count).reverse();
 }

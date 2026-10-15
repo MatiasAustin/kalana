@@ -4,6 +4,7 @@ import { getShipmentTracking } from "@/lib/actions/orders";
 import { LiveShipmentMap } from "@/components/tracking/LiveShipmentMap";
 import { ShipmentTimeline } from "@/components/tracking/ShipmentTimeline";
 import { CancelOrderButton } from "@/components/orders/CancelOrderButton";
+import { RefreshTrackingButton } from "@/components/tracking/RefreshTrackingButton";
 import { ArrowLeft, Package, Coffee, HelpCircle, ExternalLink } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -105,9 +106,12 @@ export default async function TrackingDetailPage({
             </h1>
           </div>
 
-          <div className="text-left sm:text-right font-mono text-xs">
-            <span className="text-kalana-black/50 block text-[10px] uppercase tracking-wider">Tujuan Penerima</span>
-            <span className="font-bold text-sm text-kalana-black">{destinationCity}</span>
+          <div className="text-left sm:text-right font-mono text-xs flex flex-col sm:items-end gap-2">
+            <div>
+              <span className="text-kalana-black/50 block text-[10px] uppercase tracking-wider">Tujuan Penerima</span>
+              <span className="font-bold text-sm text-kalana-black">{destinationCity}</span>
+            </div>
+            <RefreshTrackingButton orderNumber={trackingData.orderNumber} />
           </div>
         </div>
 

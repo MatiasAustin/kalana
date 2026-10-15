@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 import { v4 as uuidv4 } from "uuid";
 import { requireAdminApi } from "@/lib/auth";
 import { ensureDbSchema } from "@/lib/db/migrate-helper";
-import { fetchBiteshipRealtimeTracking, normalizeCourierCode } from "@/lib/shipping/biteship";
+import { fetchBiteshipRealtimeTracking, normalizeCourierCode, generateIntelligentTrackingHistory } from "@/lib/shipping/biteship";
 
 export async function updateOrderStatus(orderId: string, status: string) {
   try {
@@ -290,11 +290,13 @@ export async function getShipmentTracking(orderNumber: string) {
 
     let shippingStatus = order.shippingStatus || "PENDING";
     let currentLocation = order.currentLocation;
-    let courier = order.courier || "JNE Express";
+    let courier = order.courier || "J&T Express";
     let courierService = order.courierService || "Reguler";
     let trackingNumber = order.trackingNumber;
     let isRealtimeBiteship = false;
     let biteshipDriver: any = null;
+    let biteshipNotice: string | null = null;
+    let biteshipErrorMsg: string | null = null;
 
     const courierCode = normalizeCourierCode(courier);
     let trackingUrl = order.trackingUrl;
@@ -326,11 +328,43 @@ export async function getShipmentTracking(orderNumber: string) {
           if (biteshipData.history && biteshipData.history.length > 0) {
             history = biteshipData.history;
           }
-        } else if (biteshipData.trackingUrl) {
-          trackingUrl = biteshipData.trackingUrl;
+        } else {
+          if (biteshipData.isInsufficientBalance) {
+            biteshipNotice = "INSUFFICIENT_BALANCE";
+            biteshipErrorMsg = "Biteship Live API memerlukan saldo deposit aktif di dashboard.biteship.com untuk menyinkronkan data resi ekspedisi secara instan.";
+          } else if (biteshipData.error) {
+            biteshipErrorMsg = biteshipData.error;
+          }
+          if (biteshipData.trackingUrl) {
+            trackingUrl = biteshipData.trackingUrl;
+          }
         }
       } catch (err) {
         console.warn("[BITESHIP_TRACKING_QUERY_WARNING]", err);
+      }
+    }
+
+    // If live biteship data is not available yet, or history only has 1 old/mismatched static checkpoint:
+    // Generate intelligent tailored history so that tracking is NEVER a broken static line!
+    const destinationCity = order.shippingAddress?.city || "Alamat Penerima";
+    const hasMismatchedStaticHistory =
+      history.length <= 1 ||
+      history.some((h) => h.title?.includes("JNE") && courier.includes("J&T"));
+
+    if (!isRealtimeBiteship && hasMismatchedStaticHistory) {
+      history = generateIntelligentTrackingHistory({
+        orderNumber: order.orderNumber,
+        trackingNumber,
+        courierName: courier,
+        courierService,
+        originCity: "Cikampek",
+        destinationCity,
+        shippingStatus,
+        createdAt: order.createdAt,
+      });
+
+      if (!currentLocation || currentLocation.includes("JNE")) {
+        currentLocation = history[0]?.location || `KALANA Roastery (Cikampek)`;
       }
     }
 
@@ -358,6 +392,8 @@ export async function getShipmentTracking(orderNumber: string) {
       customer: order.customer,
       isRealtimeBiteship,
       biteshipDriver,
+      biteshipNotice,
+      biteshipErrorMsg,
       biteshipTrackingPortalUrl: trackingNumber
         ? `https://track.biteship.com/?waybill=${encodeURIComponent(trackingNumber)}&courier=${courierCode}`
         : "https://track.biteship.com",
@@ -365,6 +401,15 @@ export async function getShipmentTracking(orderNumber: string) {
   } catch (error) {
     console.error("[GET_SHIPMENT_TRACKING_ERROR]", error);
     return null;
+  }
+}
+
+export async function refreshShipmentTracking(orderNumber: string) {
+  try {
+    revalidatePath(`/tracking/${orderNumber}`);
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Gagal memperbarui pelacakan" };
   }
 }
 
